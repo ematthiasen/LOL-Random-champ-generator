@@ -1,25 +1,37 @@
 import logo from './logo.svg';
 import './App.css';
+import { useEffect, useState } from 'react';
+import axios from 'axios'
 
 function App() {
+
+  const [ champList, setChampList ] = useState(null)
+  const baseUrl = 'https://developer.riotgames.com/'
+
+
+  useEffect(() => {
+    fetch('http://ddragon.leagueoflegends.com/cdn/12.13.1/data/en_US/champion.json')
+      .then((response) => response.json())
+      .then(response => {
+        setChampList(response.data)
+      })
+  
+  }, [])
+
+
+  console.log(champList)
+
+  if (champList === null) return <div>Waiting</div>
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      {champList.map((champ) => 
+        <li>{champ.id}</li>
+      )}
     </div>
-  );
+  )
+
+
 }
 
-export default App;
+export default App
