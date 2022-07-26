@@ -22,6 +22,7 @@
     "start": "react-dotenv && react-scripts start",
     "cors-server":  "cd ../cors-anywhere && node server.js",
     "build": "react-dotenv && react-scripts build",
+    "heroku:deploy": "git push heroku main",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
