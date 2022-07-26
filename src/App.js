@@ -61,7 +61,7 @@ function App() {
         <Grid container justifyContent='center'>
           <Paper variant='0'>
             <Stack direction='column' spacing={2}>
-              <Typography variant='h5'>done waitinga asdfasdf asdfdf</Typography>
+              <Typography variant='h5'>Summoner lookup</Typography>
               <Card sx={{ p: 2 }}>
                 <Stack direction='row'>
                   <TextField id='summoner-name' label='Summoner name' variant='outlined' value={summonerName} onChange={(event) => setSummonerName(event.target.value)} />
