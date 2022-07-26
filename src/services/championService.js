@@ -1,7 +1,7 @@
 const getChampions = async () => {
   console.log('started getting champions')
   const listOfChamps = []
-  const response = await fetch('http://ddragon.leagueoflegends.com/cdn/12.13.1/data/en_US/champion.json')
+  const response = await fetch('https://ddragon.leagueoflegends.com/cdn/12.13.1/data/en_US/champion.json')
   const responseJson = await response.json()
   console.log('received response', responseJson)
   Object.values(responseJson.data).forEach(val => {
