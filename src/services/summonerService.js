@@ -2,7 +2,7 @@ import axios from 'axios'
 import env from 'react-dotenv'
 
 //const baseUrl = 'https://developer.riotgames.com/'
-const baseUrl = 'https://aramrandomcors.herokuapp.com:8080/https://euw1.api.riotgames.com'
+const baseUrl = 'https://aramrandomcors.herokuapp.com:5761/https://euw1.api.riotgames.com'
 
 const getSummoner = async (summonerName) => {
   const headerConfig = {
