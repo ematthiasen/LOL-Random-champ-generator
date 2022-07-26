@@ -23,7 +23,7 @@ const Summoner = ({summoner, getChampData}) => {
       <CardMedia
         component='img'
         height='80'
-        image={`http://ddragon.leagueoflegends.com/cdn/12.13.1/img/champion/${mainChampData.image.full}`}
+        image={`https://ddragon.leagueoflegends.com/cdn/12.13.1/img/champion/${mainChampData.image.full}`}
       />
       <CardContent>
       <Typography variant='h5'>
