@@ -12,7 +12,7 @@ function App() {
   const [ summonerList, setSummonerList] = useState([])
 
   useEffect(() => {
-    console.log('effect')
+    console.log('loading effect')
     championService.getChampions()
       .then(champArray => {
         console.log('setting champ List', champArray)
@@ -21,8 +21,29 @@ function App() {
 
   }, [])
 
-  if (champList === []) return <div>Waiting</div>
+  useEffect(() => {
+    const savedSummonerList = window.localStorage.getItem('AramSummonerList')
+    if(savedSummonerList) {
+      console.log('found summoner list', savedSummonerList)
+      const savedSummoners = JSON.parse(savedSummonerList)
+      setSummonerList(savedSummoners)      
+    }
+  }, [])
+
+  console.log('after useEffects, check status on data, make sure components are not rendered before data is ready')
+  console.log('champList', champList)
+  console.log('summonerList', summonerList)
+
+  console.log('length champlist', champList.length)
+
+  if (champList.length === 0) {
+    console.log('champlist not yet loaded')
+    return <div>Waiting</div>
+  }
   
+
+
+
   const darkTheme = createTheme({
     palette: {
       mode: 'dark',
@@ -42,8 +63,15 @@ function App() {
     }
     //check if summoner is already in list, if so replace.
 
+
+    //Set new summonerlist in local storage
+    window.localStorage.setItem('AramSummonerList', JSON.stringify(summonerList.concat(newSummoner)))
+
     setSummonerList(summonerList.concat(newSummoner))
 
+
+    //remove data:
+    //window.localStorage.removeItem('AramSummonerList')
 
   }
 

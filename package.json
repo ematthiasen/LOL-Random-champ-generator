@@ -46,7 +46,8 @@
   },
   "react-dotenv": {
     "whitelist": [
-      "RIOT_API_KEY"
+      "RIOT_API_KEY",
+      "LOCAL_CORS"
     ]
   }
 }
