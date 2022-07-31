@@ -4,6 +4,7 @@ import { useState } from "react"
 
 
 const Summoner = ({summoner, getChampData}) => {
+  console.log('rendering Summoner', summoner)
   const [ randomChamp, setRandomChamp ] = useState(null)
   console.log('randomchamp', randomChamp)
   //const [summonerMasteries, setSummonerMasteries] = useState([])
