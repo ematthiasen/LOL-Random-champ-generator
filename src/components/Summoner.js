@@ -1,4 +1,4 @@
-import { Button, Card, CardContent, CardMedia, Stack, Typography } from "@mui/material"
+import { Button, Card, CardContent, CardHeader, CardMedia, Stack, Typography, Avatar } from "@mui/material"
 import { useState } from "react"
 //import { useState } from "react"
 
@@ -21,17 +21,16 @@ const Summoner = ({summoner, getChampData}) => {
 
   return (
     <Card key={summoner.data.id} variant='outlined'>
-      <CardMedia
-        component='img'
-        height='80'
-        image={`https://ddragon.leagueoflegends.com/cdn/12.13.1/img/champion/${mainChampData.image.full}`}
+      <CardHeader
+        avatar={
+          <Avatar alt={summoner.data.name} src={`https://ddragon.leagueoflegends.com/cdn/12.13.1/img/champion/${mainChampData.image.full}`} />
+        }
+        title={summoner.data.name}
+        titleTypographyProps={{ variant: 'h6' }}
       />
       <CardContent>
-      <Typography variant='h5'>
-        {summoner.data.name}
-      </Typography>
       <Typography variant='body1'>
-        Champs owned: {summoner.masteries.length}
+        Champions with mastery: {summoner.masteries.length}
       </Typography>
       <Stack>
         <Button onClick={generateRandomChamp}>Random champ</Button>
