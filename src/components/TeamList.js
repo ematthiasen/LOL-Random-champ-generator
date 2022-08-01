@@ -1,19 +1,23 @@
-import { Box } from '@mui/material'
+import { Box, Container, List, ListSubheader, Typography } from '@mui/material'
 import Summoner from './Summoner'
 import { Droppable } from 'react-beautiful-dnd'
 
 const TeamList = ({teamList, summoners, getChampData}) => {
 
-
-
   return (
-    <Box sx={{ px: 1, py: 1 }}>
-      <Droppable droppableId={teamList.id}>
+
+      <Droppable droppableId={teamList.id} >
         {(provided) => (
-          <div
+          <List
             ref={provided.innerRef}
             {...provided.droppableProps}
+            sx={{ minWidth: 400, minHeight: 250 }}
           >
+            <ListSubheader sx={{ bgcolor: 'inherit'}}>
+              <Typography variant='h6' sx={{ textTransform: 'uppercase'}}>
+              {teamList.id}
+              </Typography>
+            </ListSubheader>
             {teamList.summoners.map((summonerId, index) => {
               const summoner = summoners[summonerId]
               return (
@@ -28,10 +32,10 @@ const TeamList = ({teamList, summoners, getChampData}) => {
               )
             })}
             {provided.placeholder}
-          </div>
+          </List>
         )}
       </Droppable>
-    </Box>
+
   )
 }
 

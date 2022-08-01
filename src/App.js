@@ -1,17 +1,16 @@
-import { Card, Paper, Grid, Typography, Stack, TextField, Button } from '@mui/material'
+import {  Typography, Stack, TextField, Button, Box, Grid, List, ListItem, ListItemButton, FormControl, Container} from '@mui/material'
 import { createTheme, ThemeProvider } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 import { useEffect, useState } from 'react'
 import championService from './services/championService'
 import summonerService from './services/summonerService'
-import Summoner from './components/Summoner'
 import TeamList from './components/TeamList'
+import BenchList from './components/BenchList'
 import { DragDropContext } from 'react-beautiful-dnd'
 
 function App() {
   const [ champList, setChampList ] = useState([])
   const [ summonerName, setSummonerName] = useState('')
-  const [ summonerList, setSummonerList] = useState([])
 
   const [ summonerStorageObject, setSummonerStorageObject ] = useState({
     summoners: {
@@ -39,6 +38,9 @@ function App() {
       .then(champArray => {
         //console.log('setting champ List', champArray)
         setChampList(champArray)
+        
+        console.log('champions data')
+        console.log(champArray)
       })
 
   }, [])
@@ -48,20 +50,210 @@ function App() {
     if(savedSummonerStorageObject) {
       console.log('found summoner storage Object', savedSummonerStorageObject)
       const savedSummonersData = JSON.parse(savedSummonerStorageObject)
-      setSummonerList(savedSummonersData)      
+      setSummonerStorageObject(savedSummonersData)      
     }
   }, [])
-
-  console.log('after useEffects, check status on data, make sure components are not rendered before data is ready')
 
 
   if (champList.length === 0) {
     console.log('champlist not yet loaded')
     return <div>Waiting</div>
   }
+
+  const handleLoadSummoner = async (event) => {
+    event.preventDefault()
+    console.log('starting load summoner call')
+    const summonerData = await summonerService.getSummoner(summonerName)
+    //console.log('returned', summonerData)
+    const masteries = await summonerService.getSummonerMasteries(summonerData.id)
+    //console.log(masteries)
+
+    const newSummoner = {
+      ...summonerData,
+      masteries,
+      randomChamps: [0, 0, 0]
+    }
+
+    console.log('Keys:', Object.keys(summonerStorageObject.summoners))
+
+    const updatedSummonerStorage = {
+      ...summonerStorageObject,
+    }
+    
+    console.log('Keys:', Object.keys(summonerStorageObject.summoners))
+    
+    //check if already in dataObject
+    if(summonerStorageObject.summoners.hasOwnProperty(newSummoner.id)) {
+      console.log('already in summonerlist, checking if in list')
+
+      let summonerInList = false
+      for (const key of Object.keys(summonerStorageObject.lists)) {
+        const returnValue = summonerStorageObject.lists[key].summoners.find(e => e === newSummoner.id)
+        if(returnValue !== undefined) {
+          summonerInList = true
+          console.log(`summoner found in list: ${key}`)
+        }
+
+      }
+      if(summonerInList) {
+        console.log('summoner already in a list')
+        return
+      } else {
+        console.log('summoner not in a list, adding to bench')
+      }
+    }
+    updatedSummonerStorage.summoners[newSummoner.id] = newSummoner
+
+    updatedSummonerStorage.lists['bench'].summoners.push(newSummoner.id)
+        
+    console.log('Old summoner storage', summonerStorageObject)
+    console.log('New summoner storage', updatedSummonerStorage)
+
+    storeLocalData(updatedSummonerStorage)
+    setSummonerStorageObject(
+      updatedSummonerStorage
+    )
+
+  }
+
+  const rollTeam1 = () => {
+    console.log('rolling random team 1')
+    //for summoners in team 1 list
+    summonerStorageObject.lists['team1'].summoners.map((summonerId) => {
+      const currentSummoner = summonerStorageObject.summoners[summonerId]
+      console.log(`rolling for summoner${currentSummoner.name}`)
+      const randomNumber = Math.floor(Math.random() * currentSummoner.masteries.length)
+      
+      const randomChamp = currentSummoner.masteries[randomNumber]
+      console.log(randomChamp.championId)
+      const randomChampArray = [randomChamp.championId, 0, 0]
+      console.log(randomChampArray)
+      
+      //update summoner Storage object here.
+      const updatedSummonerStorage = {
+        ...summonerStorageObject,
+      }
+
+      updatedSummonerStorage.summoners[currentSummoner.id].randomChamps = randomChampArray
+      setSummonerStorageObject(updatedSummonerStorage)
+
+      return null
+    })
+  }
+
+
+  const getChampionData = (championId) => {
+    //console.log('checking id', championId)
+    const champ = champList.find((champ) => Number(champ.key) === championId)
+    //console.log('Champ', champ)
+    return champ
+  }
+
+
+  const storeLocalData = (summonerStorageObject) => {
+    window.localStorage.setItem('AramSummonerStorageObject', JSON.stringify(summonerStorageObject))
+  }
+
+  const onDragEnd = (result) => {
+    const { destination, source, draggableId} = result
+    console.log('source:', source)
+    console.log('destination:', destination)
+
+    if(!destination) {
+      console.log('destination empty, deleting')
+      const sourceList = summonerStorageObject.lists[source.droppableId]
+      const sourceListOrder = Array.from(sourceList.summoners)
+      sourceListOrder.splice(source.index, 1)
+
+      const newSourceList = {
+        ...sourceList,
+        summoners: sourceListOrder
+      }
   
+      const newStorageObject = {
+        ...summonerStorageObject,
+        lists: {
+          ...summonerStorageObject.lists,
+          [newSourceList.id]: newSourceList
+        }
+      }
+      
+      storeLocalData(newStorageObject)
+      setSummonerStorageObject(newStorageObject)
+      return
+    }
+
+    else if( destination.droppableId === source.droppableId && destination.index === source.index ) {
+      console.log('no change, exiting')
+      //not moved
+      return
+    }
+
+    else if( destination.droppableId === source.droppableId) {
+      console.log('movement within same list')
+
+      const destinationList = summonerStorageObject.lists[destination.droppableId]
+      const destinationListOrder = Array.from(destinationList.summoners)
+  
+      destinationListOrder.splice(source.index, 1)
+      destinationListOrder.splice(destination.index, 0, draggableId)
+  
+  
+      const newDestinationList = {
+        ...destinationList,
+        summoners: destinationListOrder
+      }
+  
+      const newStorageObject = {
+        ...summonerStorageObject,
+        lists: {
+          ...summonerStorageObject.lists,
+          [newDestinationList.id]: newDestinationList,
+        }
+      }
+      console.log('result of move: ', newStorageObject)
+  
+      storeLocalData(newStorageObject)
+      setSummonerStorageObject(newStorageObject)
+
+    } else {
+      console.log('movement between lists')
+      const sourceList = summonerStorageObject.lists[source.droppableId]
+      const destinationList = summonerStorageObject.lists[destination.droppableId]
+  
+      const sourceListOrder = Array.from(sourceList.summoners)
+      const destinationListOrder = Array.from(destinationList.summoners)
+  
+      sourceListOrder.splice(source.index, 1)
+      destinationListOrder.splice(destination.index, 0, draggableId)
+  
+      const newSourceList = {
+        ...sourceList,
+        summoners: sourceListOrder
+      }
+  
+      const newDestinationList = {
+        ...destinationList,
+        summoners: destinationListOrder
+      }
+  
+      const newStorageObject = {
+        ...summonerStorageObject,
+        lists: {
+          ...summonerStorageObject.lists,
+          [newDestinationList.id]: newDestinationList,
+          [newSourceList.id]: newSourceList
+        }
+      }
+      console.log('result of move: ', newStorageObject)
+  
+      storeLocalData(newStorageObject)
+      setSummonerStorageObject(newStorageObject)
+    }
+  }
 
 
+  console.log('rendering storage object', summonerStorageObject)
 
   const darkTheme = createTheme({
     palette: {
@@ -69,134 +261,59 @@ function App() {
     },
   })
 
-  const handleLoadSummoner = async () => {
-    console.log('starting load summoner call')
-    const summonerData = await summonerService.getSummoner(summonerName)
-    console.log('returned', summonerData)
-    const masteries = await summonerService.getSummonerMasteries(summonerData.id)
-    console.log(masteries)
-
-
-    const newSummoner = {
-      ...summonerData,
-      masteries
+  const lightTheme = createTheme({
+    palette: {
+      mode: 'light'
     }
-    //check if summoner is already in list, if so replace.
+  })
 
-    const updatedSummonerStorage = {
-      ...summonerStorageObject,
-    }
-    updatedSummonerStorage.summoners[newSummoner.id] = newSummoner
-    updatedSummonerStorage.lists['bench'].summoners.push(newSummoner.id)
-    console.log('Old summoner storage', summonerStorageObject)
-    console.log('New summoner storage', updatedSummonerStorage)
-
-    setSummonerStorageObject(
-      updatedSummonerStorage
-    )
-
-    //Set new summonerlist in local storage
-    //window.localStorage.setItem('AramSummonerList', JSON.stringify(summonerList.concat(newSummoner)))
-
-    //setSummonerList(summonerList.concat(newSummoner))
-
-
-    //remove data:
-    //window.localStorage.removeItem('AramSummonerList')
-
-  }
-
-  const getChampionData = (championId) => {
-    console.log('checking id', championId)
-    const champ = champList.find((champ) => Number(champ.key) === championId)
-    console.log('Champ', champ)
-    return champ
-  }
-
-  const onDragEnd = (result) => {
-    const { destination, source, draggableId} = result
-
-    if(!destination) {
-      //delete
-    }
-
-    if( destination.droppableId === source.droppableId && destination.index === source.index ) {
-      //not moved
-      return
-    }
-
-    const sourceList = summonerStorageObject.lists[source.droppableId]
-    const destinationList = summonerStorageObject.lists[destination.droppableId]
-
-    const sourceListOrder = Array.from(sourceList.summoners)
-    const destinationListOrder = Array.from(destinationList.summoners)
-
-    sourceListOrder.splice(source.index, 1)
-    destinationListOrder.splice(destination.index, 0, draggableId)
-
-    const newSourceList = {
-      ...sourceList,
-      summoners: sourceListOrder
-    }
-
-    const newDestinationList = {
-      ...destinationList,
-      summoners: destinationListOrder
-    }
-
-    const newStorageObject = {
-      ...summonerStorageObject,
-      lists: {
-        ...summonerStorageObject.lists,
-        [newDestinationList.id]: newDestinationList,
-        [newSourceList.id]: newSourceList
-      }
-    }
-
-    setSummonerStorageObject(newStorageObject)
-
-  }
-
-
-  console.log('rendering storage object', summonerStorageObject)
+  const drawerWidth=200
 
   return (
+    <Box sx={{ height: '100vh'}} justifyContent='left'>
     <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-        <Grid container justifyContent='center'>
-          <Paper variant={2} sx={{ p:2 }}>
-              <Typography variant='h5'>Summoner lookup</Typography>
-              <Card sx={{ p: 2 }}>
-                <Stack direction='row'>
-                  <TextField id='summoner-name' label='Summoner name' variant='outlined' value={summonerName} onChange={(event) => setSummonerName(event.target.value)} />
-                  <Button id='load-summoner' onClick={handleLoadSummoner}>Load</Button>
-                </Stack>
-              </Card>
-              <DragDropContext
-                onDragEnd={onDragEnd}>
-              <Card>
-                <Typography variant='h6' sx={{ px: 1, pt: 1 }}>Bench</Typography>
-                <TeamList key={summonerStorageObject.lists['bench'].id} teamList={summonerStorageObject.lists['bench']} summoners={summonerStorageObject.summoners} getChampData={getChampionData} />
-              </Card>
-              <Stack direction='row'>
-                {summonerStorageObject.listOrder.map(listId => {
-                  const list = summonerStorageObject.lists[listId]
-                  return  (
-                    <Card key={list.id} width={300}>
-                      <Typography variant='h6' sx={{ padding: 2 }}>{list.id}</Typography>
-                      <TeamList teamList={list} summoners={summonerStorageObject.summoners} getChampData={getChampionData}/>
-                    </Card>
-                  )
-                }
-                  
-                )}
-              </Stack>
+    <CssBaseline />
+    <Grid container spacing={2} sx={{ height: 1 }}>
+    <DragDropContext onDragEnd={onDragEnd}>
 
-              
-              </DragDropContext>
-          </Paper>
-        </Grid>
-    </ThemeProvider>
+      <Grid item sx={{ height: 1 }}>
+        <BenchList key={summonerStorageObject.lists['bench'].id} teamList={summonerStorageObject.lists['bench']} summoners={summonerStorageObject.summoners} getChampData={getChampionData} drawerWidth={drawerWidth} />
+      </Grid>
+
+      <Grid item xs={10}flexGrow={9} sx={{ bgcolor: '#1c1c1c'}}>
+      <Typography variant='h5' align='center' sx={{ py: 2 }}>Summoner lookup</Typography>
+      <form onSubmit={handleLoadSummoner}>
+        <Stack direction='row' justifyContent='center' spacing={10} sx={{ pb:2 }}>
+          <Button variant='contained' onClick={rollTeam1}>Roll Team 1</Button>
+          <Stack direction='row'>
+            <TextField id='summoner-name' label='Summoner name' variant='outlined' value={summonerName} onChange={(event) => setSummonerName(event.target.value)} />
+            <Button id='load-summoner' sx={{ maxWidth:30 }} onClick={handleLoadSummoner} variant='outlined'>Load</Button>
+          </Stack>
+          <Button variant='contained'>Roll Team 2</Button>
+        </Stack>
+      </form>
+
+        <br />
+        <Stack direction='row'  justifyContent='center' spacing={5}>
+        {summonerStorageObject.listOrder.map(listId => {
+          const list = summonerStorageObject.lists[listId]
+          return  (
+            <Box sx={{ bgcolor: '#2a2a2a'}}>
+              <TeamList teamList={list} summoners={summonerStorageObject.summoners} getChampData={getChampionData} direction='vertical'/>
+            </Box>
+          )
+          }      
+        )}
+        </Stack>
+      </Grid>
+      </DragDropContext>
+        
+
+
+        
+      </Grid>
+      </ThemeProvider>
+      </Box>
   )
 
 

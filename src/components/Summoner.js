@@ -1,16 +1,15 @@
-import { Button, Card, CardContent, CardHeader, CardMedia, Stack, Typography, Avatar } from "@mui/material"
+import { Box, Card, CardContent, Typograhpy, CardMedia, Stack, Typography, Avatar, Grid, ListItem, ListItemButton } from "@mui/material"
 import { useState } from "react"
 import { Draggable } from "react-beautiful-dnd"
 
 
 
 const Summoner = ({summoner, getChampData, index}) => {
-  console.log('rendering Summoner', summoner)
+  //console.log('rendering Summoner', summoner)
   const [ randomChamp, setRandomChamp ] = useState(null)
-  console.log('randomchamp', randomChamp)
-  //const [summonerMasteries, setSummonerMasteries] = useState([])
-  console.log('Summoner comp', summoner)
-  console.log('champ data', getChampData(summoner.masteries[0].championId).image.sprite)
+  //console.log('randomchamp', randomChamp)
+  //console.log('Summoner comp', summoner)
+  //console.log('champ data', getChampData(summoner.masteries[0].championId).image.sprite)
 
   const mainChampData = getChampData(summoner.masteries[0].championId)
 
@@ -20,36 +19,50 @@ const Summoner = ({summoner, getChampData, index}) => {
 
   }
 
+/*
+  <Avatar alt={summoner.name} src={`https://ddragon.leagueoflegends.com/cdn/12.13.1/img/champion/${mainChampData.image.full}`} />
+*/
+
+
+
   return (
     <Draggable draggableId={summoner.id} index={index}>
       {(provided) => (
-        <Card
+          <ListItem
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           ref={provided.innerRef}
-          variant='outlined' sx={{ py: 1 }}
-          
+          disablePadding
         >
-          <CardHeader
-            avatar={
-              <Avatar alt={summoner.name} src={`https://ddragon.leagueoflegends.com/cdn/12.13.1/img/champion/${mainChampData.image.full}`} />
-            }
-            title={summoner.name}
-            titleTypographyProps={{ variant: 'h6' }}
-          />
-          <CardContent>
-          <Typography variant='body1'>
-            Champions with mastery: {summoner.masteries.length}
-          </Typography>
-          <Stack>
-            <Button onClick={generateRandomChamp}>Random champ</Button>
-            {randomChamp ? 
-              <>Random champ: {getChampData(randomChamp.championId).name} </>:
-              <></>
-            }
-          </Stack>
-          </CardContent>
-        </Card>
+          <ListItemButton>
+            <Stack direction='row' justifyContent='space-between' flexGrow={1}>
+            
+            <Box sx={{ pl: 1 }}>
+              <Typography variant='body1'>{summoner.name}</Typography>
+              <Typography variant='body2'>Champ pool: {summoner.masteries.length}</Typography>
+            </Box>
+            <Box sx={{ alignContent: 'end' }}>
+              Random champs:
+              {summoner.randomChamps.map(champId => {
+                if(champId !== 0) {
+                  const champ = getChampData(champId)
+                  return (
+                    <div>{champ.name}</div>
+                  )
+                } else {
+                  return (
+                    <div>empty</div>
+                  )
+                }
+
+
+
+
+              })}
+            </Box>
+            </Stack>
+          </ListItemButton>
+        </ListItem>
       )}
 
     </Draggable>
