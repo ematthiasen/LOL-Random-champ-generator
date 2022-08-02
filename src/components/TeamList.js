@@ -1,4 +1,4 @@
-import { Box, Container, List, ListSubheader, Stack, Typography } from '@mui/material'
+import { Box, Container, Divider, List, ListSubheader, Stack, Typography } from '@mui/material'
 import Summoner from './Summoner'
 import { Droppable } from 'react-beautiful-dnd'
 
@@ -26,14 +26,15 @@ const TeamList = ({teamList, summoners, getChampData}) => {
             {teamList.summoners.map((summonerId, index) => {
               const summoner = summoners[summonerId]
               return (
-                <Summoner
-                  key={summoner.id}
-                  summoner={summoner}
-                  getChampData={getChampData}
-                  index={index}
-                >
-      
-                </Summoner>
+                <div key={summoner.id}>
+                  <Divider />
+                  <Summoner
+                    
+                    summoner={summoner}
+                    getChampData={getChampData}
+                    index={index}
+                  />
+                </div>
               )
             })}
             {provided.placeholder}
