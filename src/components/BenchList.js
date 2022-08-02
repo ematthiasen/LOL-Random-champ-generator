@@ -5,9 +5,7 @@ import { Droppable } from 'react-beautiful-dnd'
 const BenchList = ({teamList, summoners, getChampData, drawerWidth}) => {
 
   return (
-
       <Droppable droppableId={teamList.id} direction='vertical'>
-        
         {(provided) => (
           <Box sx={{ width: 1, height: 1 }}>
             <List
@@ -26,9 +24,7 @@ const BenchList = ({teamList, summoners, getChampData, drawerWidth}) => {
                     summoner={summoner}
                     getChampData={getChampData}
                     index={index}
-                  >
-        
-                  </SummonerSmall>
+                  />
                 )
               })}
               {provided.placeholder}

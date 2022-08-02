@@ -71,7 +71,7 @@ function App() {
     const newSummoner = {
       ...summonerData,
       masteries,
-      randomChamps: [0, 0, 0]
+      randomChamps: [null, null, null]
     }
 
     console.log('Keys:', Object.keys(summonerStorageObject.summoners))
@@ -125,6 +125,12 @@ function App() {
       const randomNumber = Math.floor(Math.random() * currentSummoner.masteries.length)
       
       const randomChamp = currentSummoner.masteries[randomNumber]
+
+      //TODO: implement criteria for valid rolls.
+      //for example, if preference for fighter, mage or tank is set, check that the champ fulfill the criteria
+      // or if a minimum of mastery level is allowed
+
+
       console.log(randomChamp.championId)
       const randomChampArray = [randomChamp.championId, 0, 0]
       console.log(randomChampArray)
@@ -299,7 +305,7 @@ function App() {
           const list = summonerStorageObject.lists[listId]
           return  (
             <Box sx={{ bgcolor: '#2a2a2a'}}>
-              <TeamList teamList={list} summoners={summonerStorageObject.summoners} getChampData={getChampionData} direction='vertical'/>
+              <TeamList key={listId} teamList={list} summoners={summonerStorageObject.summoners} getChampData={getChampionData} direction='vertical'/>
             </Box>
           )
           }      
