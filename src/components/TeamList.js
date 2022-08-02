@@ -1,4 +1,4 @@
-import { Box, Container, List, ListSubheader, Typography } from '@mui/material'
+import { Box, Container, List, ListSubheader, Stack, Typography } from '@mui/material'
 import Summoner from './Summoner'
 import { Droppable } from 'react-beautiful-dnd'
 
@@ -14,9 +14,14 @@ const TeamList = ({teamList, summoners, getChampData}) => {
             sx={{ minWidth: 400, minHeight: 250 }}
           >
             <ListSubheader sx={{ bgcolor: 'inherit'}}>
-              <Typography variant='h6' sx={{ textTransform: 'uppercase'}}>
-              {teamList.id}
-              </Typography>
+              <Stack direction='row' justifyContent='space-between'>
+                <Typography variant='h6' sx={{ textTransform: 'uppercase'}}>
+                  {teamList.id}
+                </Typography>
+                <Typography variant='subtitle1' sx={{ textTransform: 'uppercase'}}>
+                  Random champs
+                </Typography>
+              </Stack>
             </ListSubheader>
             {teamList.summoners.map((summonerId, index) => {
               const summoner = summoners[summonerId]
