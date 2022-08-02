@@ -342,12 +342,13 @@ function App() {
     },
   })
 
+  /*
   const lightTheme = createTheme({
     palette: {
       mode: 'light'
     }
   })
-
+*/
   const drawerWidth=200
 
   return (
