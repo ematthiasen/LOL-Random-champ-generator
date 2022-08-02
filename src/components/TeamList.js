@@ -1,4 +1,4 @@
-import { Box, Container, Divider, List, ListSubheader, Stack, Typography } from '@mui/material'
+import { Divider, List, ListSubheader, Stack, Typography } from '@mui/material'
 import Summoner from './Summoner'
 import { Droppable } from 'react-beautiful-dnd'
 
