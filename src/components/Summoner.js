@@ -1,5 +1,4 @@
 import { Box, Stack, Typography, ListItem, ListItemButton, Tooltip } from "@mui/material"
-import { useState } from "react"
 import { Draggable } from "react-beautiful-dnd"
 import assassin from '../images/assassin.png'
 import fighter from '../images/fighter.png'
@@ -8,9 +7,6 @@ import marksman from '../images/marksman.png'
 import support from '../images/support.png'
 import tank from '../images/tank.png'
 import { v4 as uuidv4 } from 'uuid'
-
-
-
 
 const Summoner = ({summoner, getChampData, index}) => {
 
