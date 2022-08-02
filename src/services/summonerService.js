@@ -9,7 +9,7 @@ const baseUrl = 'https://euw1.api.riotgames.com'
 const getSummoner = async (summonerName) => {
   const headerConfig = {
     headers: {
-      'X-Riot-Token': env.RIOT_API_KEY
+      'X-Riot-Token': process.env.REACT_APP_RIOT_API_KEY || env.RIOT_API_KEY
    }
   }
   //console.log('full address:', `${corsProxyUrl}/${baseUrl}/lol/summoner/v4/summoners/by-name/${summonerName}`)
