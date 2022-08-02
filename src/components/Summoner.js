@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, Typograhpy, CardMedia, Stack, Typography, Avatar, Grid, ListItem, ListItemButton } from "@mui/material"
+import { Box, Stack, Typography, ListItem, ListItemButton, Tooltip } from "@mui/material"
 import { useState } from "react"
 import { Draggable } from "react-beautiful-dnd"
 import assassin from '../images/assassin.png'
@@ -7,16 +7,12 @@ import mage from '../images/mage.png'
 import marksman from '../images/marksman.png'
 import support from '../images/support.png'
 import tank from '../images/tank.png'
+import { v4 as uuidv4 } from 'uuid'
 
 
 
 
 const Summoner = ({summoner, getChampData, index}) => {
-  //console.log('rendering Summoner', summoner)
-  const [ randomChamp, setRandomChamp ] = useState(null)
-  //console.log('randomchamp', randomChamp)
-  //console.log('Summoner comp', summoner)
-  //console.log('champ data', getChampData(summoner.masteries[0].championId).image.sprite)
 
   const roleTypes = {
     'Assassin': {
@@ -45,57 +41,49 @@ const Summoner = ({summoner, getChampData, index}) => {
     }
   }
 
-
-
-  const mainChampData = getChampData(summoner.masteries[0].championId)
-
-  const generateRandomChamp = () => {
-    const randomNumber = Math.floor(Math.random() * summoner.masteries.length)
-    setRandomChamp(summoner.masteries[randomNumber])
-
-  }
-
-/*
-  <Avatar alt={summoner.name} src={`https://ddragon.leagueoflegends.com/cdn/12.13.1/img/champion/${mainChampData.image.full}`} />
-*/
-
-
-
   return (
     <Draggable draggableId={summoner.id} index={index}>
       {(provided) => (
-          <ListItem
+        <ListItem
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           ref={provided.innerRef}
           disablePadding
         >
           <ListItemButton>
-            <Stack direction='row' justifyContent='space-between' flexGrow={1}>
+            <Stack direction='row' justifyContent='space-between' flexGrow={1} spacing={2}>
               
               <Box sx={{ pl: 1 }}>
                 <Typography variant='body1'>{summoner.name}</Typography>
-                <Typography variant='body2'>Champ pool: {summoner.masteries.length}</Typography>
+                <Typography variant='body2'>Champ pool: {summoner.filteredMasteries.length}</Typography>
               </Box>
               <Stack direction='row' spacing={1} >
                 {summoner.randomChamps.map((champId, index) => {
-                  if(champId !== 0) {
-                    const champ = getChampData(champId)
+                  if(champId !== null) {
+                    //const champ = getChampData(champId)
+                    const champ = summoner.masteries.find((champ) => champ.championId === Number(champId))
                     return (
-                      <Stack alignItems='center' width={80}>
+                      <Stack key={uuidv4()} alignItems='center' width={80}>
                         <Box component='img' sx={{ height: 80, width: 80 }} alt={champ.name} src={`https://ddragon.leagueoflegends.com/cdn/12.13.1/img/champion/${champ.image.full}`} />
                         <Typography variant='body2' align='center'>{index+1}: {champ.name}</Typography>
                         <Stack direction='row' justifyContent='center'>
                           {champ.tags.map((tag) => (
-                            <Box component='img' sx={{ height: 20, width: 20 }} alt={roleTypes[tag].tooltip} src={roleTypes[tag].image} />
+                            <Tooltip key={uuidv4()} title={roleTypes[tag].tooltip}>
+                              <Box component='img' sx={{ height: 20, width: 20 }} alt={roleTypes[tag].tooltip} src={roleTypes[tag].image} />
+                            </Tooltip>
+
                           ))}
                           </Stack>
+                          <Typography variant='body2'>P: {champ.championPoints}</Typography>
                       </Stack>
                       
                     )
                   } else {
                     return (
-                      <div>empty</div>
+                      <Stack key={uuidv4()} alignItems='center' width={80}>
+                        <Box display='flex' sx={{ height: 80, width: 80, bgcolor: 'black' }} alignItems='center' justifyContent='center'><Typography variant='h6' align='center' >?</Typography></Box>
+                        <Typography variant='body2' align='center'>{index+1}: ?</Typography>
+                      </Stack>
                     )
                   }
                 })}

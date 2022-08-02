@@ -11,6 +11,8 @@ import { DragDropContext } from 'react-beautiful-dnd'
 function App() {
   const [ champList, setChampList ] = useState([])
   const [ summonerName, setSummonerName] = useState('')
+  const [ minMasteryCutoff, setMinMasteryCutoff ] = useState(0)
+  const [ maxMasteryCutoff, setMaxMasteryCutoff ] = useState(999999)
 
   const [ summonerStorageObject, setSummonerStorageObject ] = useState({
     summoners: {
@@ -60,6 +62,53 @@ function App() {
     return <div>Waiting</div>
   }
 
+
+  const handleMinMasteryCutoff = (event) => {
+    event.preventDefault()
+    setMinMasteryCutoff(event.target.value)
+    console.log(summonerStorageObject.summoners)
+    // update filteredMasteries data for summoners
+
+    const updatedSummonerStorage = {
+      ...summonerStorageObject
+    }
+
+    for (const [key, summoner] of Object.entries(summonerStorageObject.summoners)) {
+      const newFilteredMasteries = summoner.masteries.filter(champ => maxMasteryCutoff > champ.championPoints && champ.championPoints > event.target.value )
+      console.log('summoner', summoner.name)
+      updatedSummonerStorage.summoners[key].filteredMasteries = newFilteredMasteries
+    }
+
+    storeLocalData(updatedSummonerStorage)
+    setSummonerStorageObject(
+      updatedSummonerStorage
+    )
+  }
+
+  const handleMaxMasteryCutoff = (event) => {
+    event.preventDefault()
+    setMaxMasteryCutoff(event.target.value)
+    console.log(summonerStorageObject.summoners)
+    // update filteredMasteries data for summoners
+
+    const updatedSummonerStorage = {
+      ...summonerStorageObject
+    }
+
+    for (const [key, summoner] of Object.entries(summonerStorageObject.summoners)) {
+      const newFilteredMasteries = summoner.masteries.filter(champ => event.target.value > champ.championPoints && champ.championPoints > minMasteryCutoff )
+      console.log('summoner', summoner.name)
+      updatedSummonerStorage.summoners[key].filteredMasteries = newFilteredMasteries
+    }
+
+    storeLocalData(updatedSummonerStorage)
+    setSummonerStorageObject(
+      updatedSummonerStorage
+    )
+  }
+
+
+ 
   const handleLoadSummoner = async (event) => {
     event.preventDefault()
     console.log('starting load summoner call')
@@ -68,19 +117,34 @@ function App() {
     const masteries = await summonerService.getSummonerMasteries(summonerData.id)
     //console.log(masteries)
 
+    //populate masteries data with more champ information
+    masteries.map(masteryChamp => {
+      //find champ in champlist
+      const currentChamp = champList.find(champ => Number(champ.key) === masteryChamp.championId)
+      masteryChamp.name = currentChamp.name
+      masteryChamp.image = currentChamp.image
+      masteryChamp.tags = currentChamp.tags
+      return null
+    })
+
+    const filteredMasteries = masteries.filter(champ => maxMasteryCutoff > champ.championPoints && champ.championPoints > minMasteryCutoff )
+    console.log(minMasteryCutoff, maxMasteryCutoff)
+    console.log('champs before  filter', masteries.length)
+    console.log('champs after filter', filteredMasteries.length)
+
+
     const newSummoner = {
       ...summonerData,
       masteries,
+      filteredMasteries,
       randomChamps: [null, null, null]
     }
 
-    console.log('Keys:', Object.keys(summonerStorageObject.summoners))
-
-    const updatedSummonerStorage = {
+        const updatedSummonerStorage = {
       ...summonerStorageObject,
     }
     
-    console.log('Keys:', Object.keys(summonerStorageObject.summoners))
+    //console.log('Keys:', Object.keys(summonerStorageObject.summoners))
     
     //check if already in dataObject
     if(summonerStorageObject.summoners.hasOwnProperty(newSummoner.id)) {
@@ -116,7 +180,7 @@ function App() {
 
   }
 
-  const rollTeam1 = () => {
+  const rollTeam1 = (listId) => {
     console.log('rolling random team 1')
     //for summoners in team 1 list
     summonerStorageObject.lists['team1'].summoners.map((summonerId) => {
@@ -125,14 +189,17 @@ function App() {
       const randomNumber = Math.floor(Math.random() * currentSummoner.masteries.length)
       
       const randomChamp = currentSummoner.masteries[randomNumber]
-
       //TODO: implement criteria for valid rolls.
       //for example, if preference for fighter, mage or tank is set, check that the champ fulfill the criteria
       // or if a minimum of mastery level is allowed
 
 
       console.log(randomChamp.championId)
-      const randomChampArray = [randomChamp.championId, 0, 0]
+      const randomChampArray = [
+        currentSummoner.filteredMasteries[Math.floor(Math.random() * currentSummoner.filteredMasteries.length)].championId,
+        currentSummoner.filteredMasteries[Math.floor(Math.random() * currentSummoner.filteredMasteries.length)].championId,
+        currentSummoner.filteredMasteries[Math.floor(Math.random() * currentSummoner.filteredMasteries.length)].championId,
+      ]
       console.log(randomChampArray)
       
       //update summoner Storage object here.
@@ -164,6 +231,7 @@ function App() {
     const { destination, source, draggableId} = result
     console.log('source:', source)
     console.log('destination:', destination)
+    console.log('draggable ID:', draggableId)
 
     if(!destination) {
       console.log('destination empty, deleting')
@@ -175,9 +243,16 @@ function App() {
         ...sourceList,
         summoners: sourceListOrder
       }
-  
+      
+      const newSummonerList = {
+        ...summonerStorageObject.summoners
+      }
+      delete newSummonerList[draggableId]
+
+
       const newStorageObject = {
         ...summonerStorageObject,
+        summoners: newSummonerList,
         lists: {
           ...summonerStorageObject.lists,
           [newSourceList.id]: newSourceList
@@ -287,7 +362,7 @@ function App() {
       </Grid>
 
       <Grid item xs={10}flexGrow={9} sx={{ bgcolor: '#1c1c1c'}}>
-      <Typography variant='h5' align='center' sx={{ py: 2 }}>Summoner lookup</Typography>
+      <Typography variant='h5' align='center' sx={{ py: 2 }}>3v3 ARAM random champ generator EUW</Typography>
       <form onSubmit={handleLoadSummoner}>
         <Stack direction='row' justifyContent='center' spacing={10} sx={{ pb:2 }}>
           <Button variant='contained' onClick={rollTeam1}>Roll Team 1</Button>
@@ -298,13 +373,16 @@ function App() {
           <Button variant='contained'>Roll Team 2</Button>
         </Stack>
       </form>
-
+      <Stack direction='row' justifyContent='center' spacing={10} sx={{ pb:2 }}>
+        <TextField id='mastery-minimum-point-cutoff' type='number' label='Minimum mastery points' variant='outlined' value={minMasteryCutoff} onChange={handleMinMasteryCutoff} />
+        <TextField id='mastery-maximum-point-cutoff' type='number' label='Maximum mastery points' variant='outlined' value={maxMasteryCutoff} onChange={handleMaxMasteryCutoff} />
+      </Stack>
         <br />
         <Stack direction='row'  justifyContent='center' spacing={5}>
         {summonerStorageObject.listOrder.map(listId => {
           const list = summonerStorageObject.lists[listId]
           return  (
-            <Box sx={{ bgcolor: '#2a2a2a'}}>
+            <Box key={listId} sx={{ bgcolor: '#2a2a2a'}}>
               <TeamList key={listId} teamList={list} summoners={summonerStorageObject.summoners} getChampData={getChampionData} direction='vertical'/>
             </Box>
           )
