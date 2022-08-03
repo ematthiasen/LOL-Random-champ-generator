@@ -11,7 +11,7 @@ const BenchList = ({teamList, summoners, getChampData, drawerWidth}) => {
             <List
               ref={provided.innerRef}
               {...provided.droppableProps}
-              sx={{ height: 1}}
+              sx={{ height: 1, minWidth: { xs: 200 } }}
             >
               <ListSubheader>
                 Bench
@@ -28,9 +28,6 @@ const BenchList = ({teamList, summoners, getChampData, drawerWidth}) => {
                 )
               })}
               {provided.placeholder}
-              <ListItem>
-                Bottom of the list
-              </ListItem>
             </List>
           </Box>
         )}
