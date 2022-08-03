@@ -1,4 +1,4 @@
-import { Box, List, ListItem, ListSubheader } from '@mui/material'
+import { Box, List, ListSubheader } from '@mui/material'
 import SummonerSmall from './SummonerSmall'
 import { Droppable } from 'react-beautiful-dnd'
 
