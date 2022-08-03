@@ -238,6 +238,30 @@ function App() {
     window.localStorage.setItem('AramSummonerStorageObject', JSON.stringify(summonerStorageObject))
   }
 
+  const clearDataAndStorage = () => {
+    window.localStorage.removeItem('AramSummonerStorageObject')
+    setSummonerStorageObject({
+      summoners: {
+      },
+      lists: {
+        'bench': {
+          id: 'bench',
+          summoners: []
+        },
+        'team1': {
+          id: 'team1',
+          summoners: []
+        },
+        'team2': {
+          id: 'team2',
+          summoners: []
+        }
+      },
+      listOrder: ['team1', 'team2']
+    })
+  }
+
+
   const onDragEnd = (result) => {
     const { destination, source, draggableId} = result
     console.log('source:', source)
@@ -382,6 +406,7 @@ function App() {
             <TextField id='summoner-name' label='Summoner name' variant='outlined' value={summonerName} onChange={(event) => setSummonerName(event.target.value)} />
             <Button id='load-summoner' sx={{ maxWidth:30 }} onClick={handleLoadSummoner} variant='outlined'>Load</Button>
           </Stack>
+          <Button variant='outlined' onClick={clearDataAndStorage}>Reset</Button>
           <Button variant='contained' onClick={() => rollTeam('team2')}>Roll Team 2</Button>
         </Stack>
       </form>
