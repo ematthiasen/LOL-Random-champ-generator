@@ -163,12 +163,18 @@ function App() {
         console.log('summoner already in a list')
         return
       } else {
-        console.log('summoner not in a list, adding to bench')
+        console.log('summoner not in a list, adding to an empty list slot')
       }
     }
     updatedSummonerStorage.summoners[newSummoner.id] = newSummoner
 
-    updatedSummonerStorage.lists['bench'].summoners.push(newSummoner.id)
+    if (updatedSummonerStorage.lists['team1'].summoners.length < 3){
+      updatedSummonerStorage.lists['team1'].summoners.push(newSummoner.id)
+    } else if (updatedSummonerStorage.lists['team2'].summoners.length < 3) {
+      updatedSummonerStorage.lists['team2'].summoners.push(newSummoner.id)
+    } else {
+      updatedSummonerStorage.lists['bench'].summoners.push(newSummoner.id)
+    }
         
     console.log('Old summoner storage', summonerStorageObject)
     console.log('New summoner storage', updatedSummonerStorage)
