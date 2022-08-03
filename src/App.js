@@ -113,6 +113,11 @@ function App() {
     event.preventDefault()
     console.log('starting load summoner call')
     const summonerData = await summonerService.getSummoner(summonerName)
+    if (summonerData === null){
+      console.log('summoner not found')
+      return
+    }
+
     //console.log('returned', summonerData)
     const masteries = await summonerService.getSummonerMasteries(summonerData.id)
     //console.log(masteries)

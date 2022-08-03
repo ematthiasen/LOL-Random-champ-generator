@@ -5,6 +5,7 @@ const getSummoner = async (summonerName) => {
     return (result.data)
   } catch (error) {
     console.log('error', error)
+    return null
   }
 }
 
@@ -15,6 +16,7 @@ const getSummonerMasteries = async (encryptedSummonerId) => {
     return (result.data)
   } catch (error) {
     console.log('error', error)
+    return null
   }
 }
 
