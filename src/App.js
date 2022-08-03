@@ -406,7 +406,6 @@ function App() {
             <TextField id='summoner-name' label='Summoner name' variant='outlined' value={summonerName} onChange={(event) => setSummonerName(event.target.value)} />
             <Button id='load-summoner' sx={{ maxWidth:30 }} onClick={handleLoadSummoner} variant='outlined'>Load</Button>
           </Stack>
-          <Button variant='outlined' onClick={clearDataAndStorage}>Reset</Button>
           <Button variant='contained' onClick={() => rollTeam('team2')}>Roll Team 2</Button>
         </Stack>
       </form>
