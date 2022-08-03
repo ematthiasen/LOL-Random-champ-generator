@@ -180,12 +180,12 @@ function App() {
 
   }
 
-  const rollTeam1 = (listId) => {
-    console.log('rolling random team 1')
+  const rollTeam = (listId) => {
+    console.log(`rolling random ${listId}`)
     //for summoners in team 1 list
-    summonerStorageObject.lists['team1'].summoners.map((summonerId) => {
+    summonerStorageObject.lists[listId].summoners.map((summonerId) => {
       const currentSummoner = summonerStorageObject.summoners[summonerId]
-      console.log(`rolling for summoner${currentSummoner.name}`)
+      console.log(`rolling for summoner ${currentSummoner.name}`)
       const randomNumber = Math.floor(Math.random() * currentSummoner.masteries.length)
       
       const randomChamp = currentSummoner.masteries[randomNumber]
@@ -362,16 +362,16 @@ function App() {
         <BenchList key={summonerStorageObject.lists['bench'].id} teamList={summonerStorageObject.lists['bench']} summoners={summonerStorageObject.summoners} getChampData={getChampionData} drawerWidth={drawerWidth} />
       </Grid>
 
-      <Grid item xs={10}flexGrow={9} sx={{ bgcolor: '#1c1c1c'}}>
+      <Grid item flexGrow={9} sx={{ bgcolor: '#1c1c1c'}}>
       <Typography variant='h5' align='center' sx={{ py: 2 }}>3v3 ARAM random champ generator EUW</Typography>
       <form onSubmit={handleLoadSummoner}>
         <Stack direction='row' justifyContent='center' spacing={10} sx={{ pb:2 }}>
-          <Button variant='contained' onClick={rollTeam1}>Roll Team 1</Button>
+          <Button variant='contained' onClick={() => rollTeam('team1')}>Roll Team 1</Button>
           <Stack direction='row'>
             <TextField id='summoner-name' label='Summoner name' variant='outlined' value={summonerName} onChange={(event) => setSummonerName(event.target.value)} />
             <Button id='load-summoner' sx={{ maxWidth:30 }} onClick={handleLoadSummoner} variant='outlined'>Load</Button>
           </Stack>
-          <Button variant='contained'>Roll Team 2</Button>
+          <Button variant='contained' onClick={() => rollTeam('team2')}>Roll Team 2</Button>
         </Stack>
       </form>
       <Stack direction='row' justifyContent='center' spacing={10} sx={{ pb:2 }}>
@@ -379,17 +379,17 @@ function App() {
         <TextField id='mastery-maximum-point-cutoff' type='number' label='Maximum mastery points' variant='outlined' value={maxMasteryCutoff} onChange={handleMaxMasteryCutoff} />
       </Stack>
         <br />
-        <Stack direction='row'  justifyContent='center' spacing={5}>
+        <Grid container justifyContent='center'>
         {summonerStorageObject.listOrder.map(listId => {
           const list = summonerStorageObject.lists[listId]
           return  (
-            <Box key={listId} sx={{ bgcolor: '#2a2a2a'}}>
+            <Grid item key={listId} sx={{ bgcolor: '#2a2a2a', m: 1}}>
               <TeamList key={listId} teamList={list} summoners={summonerStorageObject.summoners} getChampData={getChampionData} direction='vertical'/>
-            </Box>
+            </Grid>
           )
           }      
         )}
-        </Stack>
+        </Grid>
       </Grid>
       </DragDropContext>
         
