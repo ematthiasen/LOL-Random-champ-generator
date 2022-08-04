@@ -1,8 +1,13 @@
 const getSummoner = async (summonerName) => {
   try {
-    const result = await fetch(`/.netlify/functions/getSummoner?summonerName=${summonerName}`).then((res => res.json()))
-    console.log(result)
-    return (result.data)
+    const result = await fetch(`/.netlify/functions/getSummoner?summonerName=${summonerName}`)
+  
+    if (result.status !== 200) {
+      console.log('statuscode other than 200')
+      return null
+    }
+    const resultJSON = await result.json()
+    return (resultJSON.data)
   } catch (error) {
     console.log('error', error)
     return null
@@ -11,9 +16,13 @@ const getSummoner = async (summonerName) => {
 
 const getSummonerMasteries = async (encryptedSummonerId) => {
   try {
-    const result = await fetch(`/.netlify/functions/getSummonerMasteries?encryptedSummonerId=${encryptedSummonerId}`).then((res => res.json()))
-    console.log(result)
-    return (result.data)
+    const result = await fetch(`/.netlify/functions/getSummonerMasteries?encryptedSummonerId=${encryptedSummonerId}`)
+    if (result.status !== 200) {
+      console.log('statuscode other than 200')
+      return null
+    }
+    const resultJSON = await result.json()
+    return (resultJSON.data)
   } catch (error) {
     console.log('error', error)
     return null

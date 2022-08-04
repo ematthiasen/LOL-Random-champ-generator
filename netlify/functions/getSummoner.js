@@ -17,10 +17,10 @@ exports.handler = async function (event, context) {
       body: JSON.stringify({ data: response.data })
     }
   } catch (error) {
-    throw error
-    /*return {
+    //throw error
+    return {
       statusCode: error.response.status,
       body: error.toString()
-    }*/
+    }
   }
 }
