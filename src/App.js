@@ -1,18 +1,22 @@
-import {  Typography, Stack, TextField, Button, Box, Grid } from '@mui/material'
+import {  Typography, Stack, TextField, Button, Container, Grid, Snackbar, IconButton, Alert } from '@mui/material'
 import { createTheme, ThemeProvider } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import championService from './services/championService'
 import summonerService from './services/summonerService'
 import TeamList from './components/TeamList'
-import BenchList from './components/BenchList'
 import { DragDropContext } from 'react-beautiful-dnd'
+import CloseIcon from '@mui/icons-material/Close'
 
 function App() {
   const [ champList, setChampList ] = useState([])
   const [ summonerName, setSummonerName] = useState('')
   const [ minMasteryCutoff, setMinMasteryCutoff ] = useState(0)
   const [ maxMasteryCutoff, setMaxMasteryCutoff ] = useState(999999)
+
+  const [ snackbarList, setSnackbarList ] = useState([])
+  const [ snackbarOpen, setSnackbarOpen ] = useState(false)
+  const [ snackbarMessage, setSnackbarMessage ] = useState(undefined)
 
   const [ summonerStorageObject, setSummonerStorageObject ] = useState({
     summoners: {
@@ -55,6 +59,33 @@ function App() {
       setSummonerStorageObject(savedSummonersData)      
     }
   }, [])
+
+  //Snackbar notifications
+  useEffect (() => {
+    if (snackbarList.length && !snackbarMessage) {
+      setSnackbarMessage({...snackbarList[0]})
+      setSnackbarList((prev) => prev.slice(1))
+      setSnackbarOpen(true)
+      console.log('set snackbar Message', {...snackbarList[0]})
+    } else if (snackbarList.length && snackbarMessage && snackbarOpen) {
+      setSnackbarOpen(false)
+    }
+  }, [snackbarList, snackbarMessage, snackbarOpen]) 
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbarOpen(false)
+  }
+
+  const handleSnackbarExited = () => {
+    setSnackbarMessage(undefined)
+  }
+
+  const displaySnackbarMessage = (message, type ) => {
+    setSnackbarList((prev) => [...prev, { message, type }])
+  }
 
 
   if (champList.length === 0) {
@@ -107,7 +138,7 @@ function App() {
     )
   }
 
-
+  
  
   const handleLoadSummoner = async (event) => {
     event.preventDefault()
@@ -115,13 +146,18 @@ function App() {
     const summonerData = await summonerService.getSummoner(summonerName)
     if (summonerData === null){
       console.log('summoner not found')
+      displaySnackbarMessage('Unable to load summoner', 'warning')
       return
     }
 
     //console.log('returned', summonerData)
     const masteries = await summonerService.getSummonerMasteries(summonerData.id)
     //console.log(masteries)
-
+    if (masteries === null){
+      console.log(`masteries for summoner ${summonerData.name} not found`)
+      displaySnackbarMessage('Unable to load summoner masteries', 'warning')
+      return
+    }
     //populate masteries data with more champ information
     masteries.map(masteryChamp => {
       //find champ in champlist
@@ -188,6 +224,7 @@ function App() {
     setSummonerStorageObject(
       updatedSummonerStorage
     )
+    displaySnackbarMessage(`loaded summoner ${newSummoner.name}`, 'success')
 
   }
 
@@ -368,6 +405,69 @@ function App() {
     }
   }
 
+  const deleteSummoner = (summonerId) => {
+    console.log('delete summoner', summonerId)
+
+    const newSummonerList = {
+      ...summonerStorageObject.summoners
+    }
+    delete newSummonerList[summonerId]
+
+    const newStorageObject = {
+      ...summonerStorageObject,
+      summoners: newSummonerList,
+      lists: {
+        ...summonerStorageObject.lists,
+      }
+    }
+
+    for (const list of Object.values(summonerStorageObject.lists)){
+      const index = list.summoners.findIndex((summoner) => summoner === summonerId)
+      if (index !== -1){
+        console.log('hit in list', list.id, 'on index', index)
+
+        const newList = Array.from(list.summoners)
+        newList.splice(index, 1)
+        console.log('newlist', newList)
+        console.log('oldlist', list.summoners)
+        newStorageObject.lists[list.id].summoners = newList
+      }
+    }
+
+    storeLocalData(newStorageObject)
+    setSummonerStorageObject(newStorageObject)
+    displaySnackbarMessage('Deleted summoner', 'success')
+
+/*
+    const sourceList = summonerStorageObject.lists[source.droppableId]
+    const sourceListOrder = Array.from(sourceList.summoners)
+    sourceListOrder.splice(source.index, 1)
+
+    const newSourceList = {
+      ...sourceList,
+      summoners: sourceListOrder
+    }
+    
+    const newSummonerList = {
+      ...summonerStorageObject.summoners
+    }
+    delete newSummonerList[draggableId]
+
+
+    const newStorageObject = {
+      ...summonerStorageObject,
+      summoners: newSummonerList,
+      lists: {
+        ...summonerStorageObject.lists,
+        [newSourceList.id]: newSourceList
+      }
+    }
+    
+    storeLocalData(newStorageObject)
+    setSummonerStorageObject(newStorageObject)
+    */
+  }
+
 
   console.log('rendering storage object', summonerStorageObject)
 
@@ -384,57 +484,59 @@ function App() {
     }
   })
 */
-  const drawerWidth=200
 
   return (
-    <Box sx={{ height: '100vh'}} justifyContent='left'>
-    <ThemeProvider theme={darkTheme}>
-    <CssBaseline />
-    <Grid container spacing={2} sx={{ height: 1 }}>
-    <DragDropContext onDragEnd={onDragEnd}>
-
-      <Grid item sx={{ height: 1 }}>
-        <BenchList key={summonerStorageObject.lists['bench'].id} teamList={summonerStorageObject.lists['bench']} summoners={summonerStorageObject.summoners} getChampData={getChampionData} drawerWidth={drawerWidth} />
-      </Grid>
-
-      <Grid item flexGrow={9} sx={{ bgcolor: '#1c1c1c'}}>
-      <Typography variant='h5' align='center' sx={{ py: 2 }}>3v3 ARAM random champ generator EUW</Typography>
-      <form onSubmit={handleLoadSummoner}>
-        <Stack direction='row' justifyContent='center' spacing={10} sx={{ pb:2 }}>
-          <Button variant='contained' onClick={() => rollTeam('team1')}>Roll Team 1</Button>
-          <Stack direction='row'>
-            <TextField id='summoner-name' label='Summoner name' variant='outlined' value={summonerName} onChange={(event) => setSummonerName(event.target.value)} />
-            <Button id='load-summoner' sx={{ maxWidth:30 }} onClick={handleLoadSummoner} variant='outlined'>Load</Button>
-          </Stack>
-          <Button variant='outlined' onClick={clearDataAndStorage}>Clear</Button>
-          <Button variant='contained' onClick={() => rollTeam('team2')}>Roll Team 2</Button>
-        </Stack>
-      </form>
-      <Stack direction='row' justifyContent='center' spacing={10} sx={{ pb:2 }}>
-        <TextField id='mastery-minimum-point-cutoff' type='number' label='Minimum mastery points' variant='outlined' value={minMasteryCutoff} onChange={handleMinMasteryCutoff} />
-        <TextField id='mastery-maximum-point-cutoff' type='number' label='Maximum mastery points' variant='outlined' value={maxMasteryCutoff} onChange={handleMaxMasteryCutoff} />
-      </Stack>
-        <br />
-        <Grid container justifyContent='center'>
-        {summonerStorageObject.listOrder.map(listId => {
-          const list = summonerStorageObject.lists[listId]
-          return  (
-            <Grid item key={listId} sx={{ bgcolor: '#2a2a2a', m: 1}}>
-              <TeamList key={listId} teamList={list} summoners={summonerStorageObject.summoners} getChampData={getChampionData} direction='vertical'/>
+    <Container sx={{ }} >
+      <ThemeProvider theme={darkTheme}>
+        <CssBaseline />
+        <Grid container spacing={1} justifyContent='center' alignItems='center' align='center' alignContent='center'>
+          <DragDropContext onDragEnd={onDragEnd}>
+            <Grid item xs={12} order={1}>
+              <Typography variant='h5' sx={{ py: 2 }}>3v3 ARAM random champ generator EUW</Typography>
             </Grid>
-          )
-          }      
-        )}
+            <Grid item display='flex' xs={6} md={3} order={{ xs:3, md: 2 }} sx={{ p: 1, }} justifyContent='right'>
+              <Button variant='contained' onClick={() => rollTeam('team1')} sx={{ }} >Roll Team 1</Button>
+            </Grid>
+            <Grid item flexShrink xs={12} md={6} order={{ xs: 2 }} >
+              <form onSubmit={handleLoadSummoner}>
+                <Stack direction='row' justifyContent='center' xs={8} >
+                  <TextField id='summoner-name' label='Summoner name' variant='outlined' value={summonerName} onChange={(event) => setSummonerName(event.target.value)} />
+                  <Button id='load-summoner' onClick={handleLoadSummoner} variant='outlined'>Load</Button>
+                  <Button variant='outlined' onClick={clearDataAndStorage} sx={{ ml: 2}}>Clear data</Button>
+                </Stack>
+              </form>
+
+            </Grid>
+            <Grid item display='flex' xs={6} md={3} order={{ xs: 3, md: 2 }} sx={{ p: 1}}  justifyContent='left'>
+              <Button variant='contained' onClick={() => rollTeam('team2')}>Roll Team 2</Button>
+            </Grid>
+            <Grid item order={{ xs: 4 }} xs={12}>
+              <TextField id='mastery-minimum-point-cutoff' type='number' label='Minimum mastery points' variant='outlined' value={minMasteryCutoff} onChange={handleMinMasteryCutoff} />
+              <TextField id='mastery-maximum-point-cutoff' type='number' label='Maximum mastery points' variant='outlined' value={maxMasteryCutoff} onChange={handleMaxMasteryCutoff} />
+            </Grid>
+            <br />
+            
+              {summonerStorageObject.listOrder.map(listId => {
+                const list = summonerStorageObject.lists[listId]
+                return  (
+                  <TeamList key={listId} teamList={list} summoners={summonerStorageObject.summoners} getChampData={getChampionData} deleteSummoner={deleteSummoner} direction='vertical'/>
+
+                )
+              })}
+            
+          </DragDropContext>
         </Grid>
-      </Grid>
-      </DragDropContext>
-        
-
-
-        
-      </Grid>
+        <Snackbar
+          key={snackbarMessage ? snackbarMessage.message : undefined}
+          open={snackbarOpen}
+          autoHideDuration={5000}
+          onClose={handleSnackbarClose} 
+          TransitionProps={{ onExited: handleSnackbarExited}}
+        >
+          <Alert severity={snackbarMessage ? snackbarMessage.type : undefined} action={<IconButton onClick={handleSnackbarClose}><CloseIcon /></IconButton>}>{snackbarMessage ? snackbarMessage.message : undefined}</Alert>
+        </Snackbar>
       </ThemeProvider>
-      </Box>
+    </Container>
   )
 
 
