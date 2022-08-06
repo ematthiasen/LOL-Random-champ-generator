@@ -8,6 +8,8 @@ import support from '../images/support.png'
 import tank from '../images/tank.png'
 import { v4 as uuidv4 } from 'uuid'
 import DeleteIcon from '@mui/icons-material/Delete'
+import RerollIcon from '@mui/icons-material/Replay'
+import SettingsIcon from '@mui/icons-material/MoreVert'
 
 const Summoner = ({summoner, index, deleteSummoner}) => {
 
@@ -38,6 +40,8 @@ const Summoner = ({summoner, index, deleteSummoner}) => {
     }
   }
 
+  const champImageColumnSize = 75
+
   return (
     <Draggable draggableId={summoner.id} index={index}>
       {(provided) => (
@@ -47,25 +51,39 @@ const Summoner = ({summoner, index, deleteSummoner}) => {
           ref={provided.innerRef}
           disablePadding
         >
-          <ListItemButton>
-            <Stack direction='row' justifyContent='space-between' flexGrow={1} spacing={2}>
+          <ListItemButton sx={{ p: {xs: 1, md: 2}}}>
+            <Stack direction={{ xs: 'column', md: 'row' }} justifyContent='space-between' flexGrow={1} spacing={0} >
               
               <Box>
                 <Typography variant='body1'>{summoner.name}</Typography>
-                <Typography variant='body2'>Champ pool: {summoner.filteredMasteries.length}</Typography>
-                <IconButton onClick={() => deleteSummoner(summoner.id)}>
-                  <DeleteIcon />
-                </IconButton>
+                <Typography variant='caption'>Champ pool:</Typography>
+                <Typography variant='caption'>{summoner.filteredMasteries.length}</Typography>
+                <Box>
+                  <Tooltip title='remove summoner'>
+                    <IconButton onClick={() => deleteSummoner(summoner.id)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title='Reroll champions for this summoner'>
+                    <IconButton onClick={() => console.log('test')}>
+                      <RerollIcon />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title='Edit summoner specific settings'>
+                    <IconButton onClick={() => console.log('test')}>
+                      <SettingsIcon />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
               </Box>
-              <Stack direction={{ xs: 'column', md: 'row' }} spacing={1}  >
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={{ xs: 0, md: 1}} >
                 {summoner.randomChamps.map((champId, index) => {
                   if(champId !== null) {
-                    //const champ = getChampData(champId)
                     const champ = summoner.masteries.find((champ) => champ.championId === Number(champId))
                     return (
-                      <Stack key={uuidv4()} alignItems='center' width={{ xs: 75, sm: 75}}>
-                        <Box display={{ xs: 'none', md: 'block' }} component='img' sx={{ height: { xs: 75, sm: 75}, width: { xs: 75, sm: 75} }} alt={champ.name} src={`https://ddragon.leagueoflegends.com/cdn/12.13.1/img/champion/${champ.image.full}`} />
-                        <Typography variant='caption' align='center'>{index+1}: {champ.name}</Typography>
+                      <Stack key={uuidv4()} alignItems={{ xs: 'flex-start', md: 'center'}} width={{ xs: 175, md: champImageColumnSize}} >
+                        <Box display={{ xs: 'none', md: 'block' }} component='img' sx={{ height: champImageColumnSize, width: champImageColumnSize }} alt={champ.name} src={`https://ddragon.leagueoflegends.com/cdn/12.13.1/img/champion/${champ.image.full}`} />
+                        <Typography variant='caption' align='center' >{index+1}: {champ.name}</Typography>
                         <Stack direction='row' justifyContent='center'>
                           {champ.tags.map((tag) => (
                             <Tooltip display={{ xs: 'none', md: 'block' }} key={uuidv4()} title={roleTypes[tag].tooltip}>

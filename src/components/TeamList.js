@@ -8,21 +8,21 @@ const TeamList = ({teamList, summoners, getChampData, deleteSummoner}) => {
 
       <Droppable droppableId={teamList.id} >
         {(provided) => (
-          <Grid item order={4} minWidth={{ xs: 200 }}>
+          <Grid item order={4} minWidth={{ xs: 165, md: 385 }} maxWidth={{ xs: 165, md: 385, lg: 'none' }}>
             <Paper>
             <List 
               ref={provided.innerRef}
               {...provided.droppableProps}
-              sx={{ minHeight: 250 }}
+              sx={{ minHeight: {xs: 200, md: 200 } }}
+              
             >
-              <ListSubheader sx={{ bgcolor: 'inherit'}}>
-                <Stack direction='row' justifyContent='space-between'>
-                  <Typography variant='h6' sx={{ textTransform: 'uppercase'}}>
+              <ListSubheader sx={{ bgcolor: 'inherit', px: { xs: 1, md: 2} }}>
+                <Stack direction='row' justifyContent='space-between' spacing={1} alignItems='flex-start'>
+                  <Typography variant='body1' sx={{ textTransform: 'uppercase'}}>
                     {teamList.id}
                   </Typography>
-                  <Typography variant='body2' sx={{ textTransform: 'uppercase'}} width={100}>
-                    Random
-                    champs
+                  <Typography variant='body2' display={{ xs: 'none', md: 'block' }} sx={{ textTransform: 'uppercase'}}>
+                    Random champs
                   </Typography>
                 </Stack>
               </ListSubheader>

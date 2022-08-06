@@ -1,12 +1,14 @@
-import {  Typography, Stack, TextField, Button, Container, Grid, Snackbar, IconButton, Alert } from '@mui/material'
+import {  Typography, Stack, TextField, Button, Container, Grid, Snackbar, IconButton, Alert, AppBar, Toolbar } from '@mui/material'
 import { createTheme, ThemeProvider } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import championService from './services/championService'
 import summonerService from './services/summonerService'
 import TeamList from './components/TeamList'
 import { DragDropContext } from 'react-beautiful-dnd'
 import CloseIcon from '@mui/icons-material/Close'
+import Brightness4Icon from '@mui/icons-material/Brightness4'
+import Brightness7Icon from '@mui/icons-material/Brightness7'
 
 function App() {
   const [ champList, setChampList ] = useState([])
@@ -17,6 +19,8 @@ function App() {
   const [ snackbarList, setSnackbarList ] = useState([])
   const [ snackbarOpen, setSnackbarOpen ] = useState(false)
   const [ snackbarMessage, setSnackbarMessage ] = useState(undefined)
+
+  const [ paletteMode, setPaletteMode ] = useState('dark')
 
   const [ summonerStorageObject, setSummonerStorageObject ] = useState({
     summoners: {
@@ -37,6 +41,31 @@ function App() {
     },
     listOrder: ['team1', 'team2']
   })
+
+  const customTheme = useMemo(() => createTheme({
+    
+    palette: {
+      mode: paletteMode,
+      type: 'light',
+      primary: {
+        main: '#303f9f',
+      },
+      secondary: {
+        main: '#9fa8da',
+        contrastText: '#000000',
+      },
+    },
+    breakpoints: {
+      values: {
+        xs: 0,
+        sm: 375,
+        md: 810,
+        lg: 1200,
+        xl: 1536,
+      }
+    }
+  }), [paletteMode])
+
 
   useEffect(() => {
     console.log('loading effect')
@@ -438,61 +467,27 @@ function App() {
     setSummonerStorageObject(newStorageObject)
     displaySnackbarMessage('Deleted summoner', 'success')
 
-/*
-    const sourceList = summonerStorageObject.lists[source.droppableId]
-    const sourceListOrder = Array.from(sourceList.summoners)
-    sourceListOrder.splice(source.index, 1)
-
-    const newSourceList = {
-      ...sourceList,
-      summoners: sourceListOrder
-    }
-    
-    const newSummonerList = {
-      ...summonerStorageObject.summoners
-    }
-    delete newSummonerList[draggableId]
-
-
-    const newStorageObject = {
-      ...summonerStorageObject,
-      summoners: newSummonerList,
-      lists: {
-        ...summonerStorageObject.lists,
-        [newSourceList.id]: newSourceList
-      }
-    }
-    
-    storeLocalData(newStorageObject)
-    setSummonerStorageObject(newStorageObject)
-    */
   }
 
 
   console.log('rendering storage object', summonerStorageObject)
 
-  const darkTheme = createTheme({
-    palette: {
-      mode: 'dark',
-    },
-  })
-
-  /*
-  const lightTheme = createTheme({
-    palette: {
-      mode: 'light'
-    }
-  })
-*/
-
   return (
-    <Container sx={{ }} >
-      <ThemeProvider theme={darkTheme}>
+      <ThemeProvider theme={customTheme}>
         <CssBaseline />
-        <Grid container spacing={1} justifyContent='center' alignItems='center' align='center' alignContent='center'>
+        <AppBar position='static' sx={{ mb: 2}}>
+          <Toolbar>
+          <Typography variant='h6' component='div' align='center' sx={{ flexGrow: 1 }} >3v3 ARAM random champ generator EUW</Typography>
+          <IconButton onClick={() => setPaletteMode(paletteMode === 'dark' ? 'light' : 'dark')}>{paletteMode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}</IconButton>
+          </Toolbar>
+        </AppBar>
+        <Container sx={{ }} >
+
+        <Grid container spacing={1} justifyContent='center' alignItems='flex-start' align='center' alignContent='center'>
           <DragDropContext onDragEnd={onDragEnd}>
             <Grid item xs={12} order={1}>
-              <Typography variant='h5' sx={{ py: 2 }}>3v3 ARAM random champ generator EUW</Typography>
+        
+              
             </Grid>
             <Grid item display='flex' xs={6} md={3} order={{ xs:3, md: 2 }} sx={{ p: 1, }} justifyContent='right'>
               <Button variant='contained' onClick={() => rollTeam('team1')} sx={{ }} >Roll Team 1</Button>
@@ -511,8 +506,8 @@ function App() {
               <Button variant='contained' onClick={() => rollTeam('team2')}>Roll Team 2</Button>
             </Grid>
             <Grid item order={{ xs: 4 }} xs={12}>
-              <TextField id='mastery-minimum-point-cutoff' type='number' label='Minimum mastery points' variant='outlined' value={minMasteryCutoff} onChange={handleMinMasteryCutoff} />
-              <TextField id='mastery-maximum-point-cutoff' type='number' label='Maximum mastery points' variant='outlined' value={maxMasteryCutoff} onChange={handleMaxMasteryCutoff} />
+              <TextField size='small' id='mastery-minimum-point-cutoff' type='number' label='Minimum mastery points' variant='outlined' value={minMasteryCutoff} onChange={handleMinMasteryCutoff} />
+              <TextField size='small' id='mastery-maximum-point-cutoff' type='number' label='Maximum mastery points' variant='outlined' value={maxMasteryCutoff} onChange={handleMaxMasteryCutoff} />
             </Grid>
             <br />
             
@@ -535,8 +530,9 @@ function App() {
         >
           <Alert severity={snackbarMessage ? snackbarMessage.type : undefined} action={<IconButton onClick={handleSnackbarClose}><CloseIcon /></IconButton>}>{snackbarMessage ? snackbarMessage.message : undefined}</Alert>
         </Snackbar>
-      </ThemeProvider>
-    </Container>
+
+      </Container>
+    </ThemeProvider>
   )
 
 
