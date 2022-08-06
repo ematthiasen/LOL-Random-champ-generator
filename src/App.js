@@ -257,34 +257,68 @@ function App() {
 
   }
 
+  const handleRollSummoner = (summonerId) => {
+    const randomChamps = rollSummoner(summonerId)
+
+    console.log('received rolled champs', randomChamps)
+
+    const updatedSummonerStorage = {
+      ...summonerStorageObject,
+    }
+
+    updatedSummonerStorage.summoners[summonerId].randomChamps = randomChamps
+    setSummonerStorageObject(updatedSummonerStorage)
+  }
+
+
+
+  const rollSummoner = (summonerId) => {
+    const currentSummoner = summonerStorageObject.summoners[summonerId]
+    console.log(`rolling for summoner ${currentSummoner.name}, available champs: ${currentSummoner.filteredMasteries.length}`)
+    
+    //TODO: implement criteria for valid rolls.
+    //for example, if preference for fighter, mage or tank is set, check that the champ fulfill the criteria
+    // or if a minimum of mastery level is allowed
+
+    const availableChamps = Array.from(currentSummoner.filteredMasteries)
+    //console.log('available champs', availableChamps, availableChamps.length)
+    const randomChampArray = [null, null, null]
+
+    const rolledChamps = randomChampArray.map((slot, index) => {
+      //console.log('index', index)
+      //console.log('available champs', availableChamps.length)
+      if(availableChamps.length > 0) {
+        const champId = availableChamps[Math.floor(Math.random() * availableChamps.length)].championId
+        //console.log('rolled', champId)
+        //console.log('removind index', availableChamps.findIndex(e => e.championId === champId), 1)
+        availableChamps.splice(availableChamps.findIndex(e => e.championId === champId), 1)
+        return champId
+      } else {
+        return null
+      }
+    })
+
+    console.log('rolled champs', rolledChamps)
+    return rolledChamps
+
+
+  }
+
+
   const rollTeam = (listId) => {
     console.log(`rolling random ${listId}`)
     //for summoners in team 1 list
     summonerStorageObject.lists[listId].summoners.map((summonerId) => {
-      const currentSummoner = summonerStorageObject.summoners[summonerId]
-      console.log(`rolling for summoner ${currentSummoner.name}`)
-      const randomNumber = Math.floor(Math.random() * currentSummoner.masteries.length)
-      
-      const randomChamp = currentSummoner.masteries[randomNumber]
+      const rolledChamps = rollSummoner(summonerId)
       //TODO: implement criteria for valid rolls.
       //for example, if preference for fighter, mage or tank is set, check that the champ fulfill the criteria
       // or if a minimum of mastery level is allowed
 
-
-      console.log(randomChamp.championId)
-      const randomChampArray = [
-        currentSummoner.filteredMasteries[Math.floor(Math.random() * currentSummoner.filteredMasteries.length)].championId,
-        currentSummoner.filteredMasteries[Math.floor(Math.random() * currentSummoner.filteredMasteries.length)].championId,
-        currentSummoner.filteredMasteries[Math.floor(Math.random() * currentSummoner.filteredMasteries.length)].championId,
-      ]
-      console.log(randomChampArray)
-      
-      //update summoner Storage object here.
       const updatedSummonerStorage = {
         ...summonerStorageObject,
       }
 
-      updatedSummonerStorage.summoners[currentSummoner.id].randomChamps = randomChampArray
+      updatedSummonerStorage.summoners[summonerId].randomChamps = rolledChamps
       setSummonerStorageObject(updatedSummonerStorage)
 
       return null
@@ -514,8 +548,15 @@ function App() {
               {summonerStorageObject.listOrder.map(listId => {
                 const list = summonerStorageObject.lists[listId]
                 return  (
-                  <TeamList key={listId} teamList={list} summoners={summonerStorageObject.summoners} getChampData={getChampionData} deleteSummoner={deleteSummoner} direction='vertical'/>
-
+                  <TeamList
+                    key={listId} 
+                    teamList={list} 
+                    summoners={summonerStorageObject.summoners} 
+                    getChampData={getChampionData} 
+                    deleteSummoner={deleteSummoner} 
+                    handleRollSummoner={handleRollSummoner} 
+                    direction='vertical'
+                  />
                 )
               })}
             

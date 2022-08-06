@@ -2,7 +2,7 @@ import { Divider, List, ListSubheader, Stack, Typography, Grid, Paper } from '@m
 import Summoner from './Summoner'
 import { Droppable } from 'react-beautiful-dnd'
 
-const TeamList = ({teamList, summoners, getChampData, deleteSummoner}) => {
+const TeamList = ({teamList, summoners, getChampData, deleteSummoner, handleRollSummoner}) => {
 
   return (
 
@@ -36,6 +36,7 @@ const TeamList = ({teamList, summoners, getChampData, deleteSummoner}) => {
                       getChampData={getChampData}
                       index={index}
                       deleteSummoner={deleteSummoner}
+                      handleRollSummoner={handleRollSummoner}
                     />
                   </div>
                 )

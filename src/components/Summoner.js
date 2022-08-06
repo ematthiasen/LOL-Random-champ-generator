@@ -11,7 +11,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import RerollIcon from '@mui/icons-material/Replay'
 import SettingsIcon from '@mui/icons-material/MoreVert'
 
-const Summoner = ({summoner, index, deleteSummoner}) => {
+const Summoner = ({summoner, index, deleteSummoner, handleRollSummoner}) => {
 
   const roleTypes = {
     'Assassin': {
@@ -65,7 +65,7 @@ const Summoner = ({summoner, index, deleteSummoner}) => {
                     </IconButton>
                   </Tooltip>
                   <Tooltip title='Reroll champions for this summoner'>
-                    <IconButton onClick={() => console.log('test')}>
+                    <IconButton onClick={() => handleRollSummoner(summoner.id)}>
                       <RerollIcon />
                     </IconButton>
                   </Tooltip>
