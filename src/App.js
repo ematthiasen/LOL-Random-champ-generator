@@ -1,4 +1,4 @@
-import {  Typography, Stack, TextField, Button, Container, Grid, Snackbar, IconButton, Alert, AppBar, Toolbar } from '@mui/material'
+import {  Typography, Stack, TextField, Button, Container, Grid, Snackbar, IconButton, Alert, AppBar, Toolbar, CircularProgress } from '@mui/material'
 import { createTheme, ThemeProvider } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 import React, { useEffect, useMemo, useState } from 'react'
@@ -21,6 +21,7 @@ function App() {
   const [ snackbarMessage, setSnackbarMessage ] = useState(undefined)
 
   const [ paletteMode, setPaletteMode ] = useState('dark')
+  const [ summonerLoading, setSummonerLoading ] = useState(false)
 
   const [ summonerStorageObject, setSummonerStorageObject ] = useState({
     summoners: {
@@ -172,10 +173,18 @@ function App() {
   const handleLoadSummoner = async (event) => {
     event.preventDefault()
     console.log('starting load summoner call')
+
+    /* Spin loading button
+    const [ summonerLoading, setSummonerLoading ] = useState(false)
+    */
+    setSummonerLoading(true)
+
+
     const summonerData = await summonerService.getSummoner(summonerName)
     if (summonerData === null){
       console.log('summoner not found')
       displaySnackbarMessage('Unable to load summoner', 'warning')
+      setSummonerLoading(false)
       return
     }
 
@@ -185,6 +194,7 @@ function App() {
     if (masteries === null){
       console.log(`masteries for summoner ${summonerData.name} not found`)
       displaySnackbarMessage('Unable to load summoner masteries', 'warning')
+      setSummonerLoading(false)
       return
     }
     //populate masteries data with more champ information
@@ -231,6 +241,7 @@ function App() {
       }
       if(summonerInList) {
         console.log('summoner already in a list')
+        setSummonerLoading(false)
         return
       } else {
         console.log('summoner not in a list, adding to an empty list slot')
@@ -243,7 +254,11 @@ function App() {
     } else if (updatedSummonerStorage.lists['team2'].summoners.length < 3) {
       updatedSummonerStorage.lists['team2'].summoners.push(newSummoner.id)
     } else {
-      updatedSummonerStorage.lists['bench'].summoners.push(newSummoner.id)
+      // do not use bench, abort loading instead
+      displaySnackbarMessage(`Roster is full, no room for ${newSummoner.name}. Make room and try again`, 'error')
+      setSummonerLoading(false)
+      return
+      //updatedSummonerStorage.lists['bench'].summoners.push(newSummoner.id)
     }
         
     console.log('Old summoner storage', summonerStorageObject)
@@ -254,6 +269,7 @@ function App() {
       updatedSummonerStorage
     )
     displaySnackbarMessage(`loaded summoner ${newSummoner.name}`, 'success')
+    setSummonerLoading(false)
 
   }
 
@@ -530,7 +546,7 @@ function App() {
               <form onSubmit={handleLoadSummoner}>
                 <Stack direction='row' justifyContent='center' xs={8} >
                   <TextField id='summoner-name' label='Summoner name' variant='outlined' value={summonerName} onChange={(event) => setSummonerName(event.target.value)} />
-                  <Button id='load-summoner' onClick={handleLoadSummoner} variant='outlined'>Load</Button>
+                  <Button id='load-summoner' onClick={handleLoadSummoner} variant='outlined'>{summonerLoading ? <CircularProgress /> : 'Load'}</Button>
                   <Button variant='outlined' onClick={clearDataAndStorage} sx={{ ml: 2}}>Clear data</Button>
                 </Stack>
               </form>
