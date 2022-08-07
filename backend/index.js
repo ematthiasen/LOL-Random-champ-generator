@@ -60,7 +60,8 @@ let data = {
 const io = socketIo(server, {
   // Needed - check for server deployment
   cors: {
-    origin: ['http://localhost:*', 'https://aramrandom.onrender.com:*']
+    origin: ['http://localhost:*', 'https://aramrandom.onrender.com:*'],
+    methods: ["GET", "POST"]
   }
   
 })
