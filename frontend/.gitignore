@@ -24,5 +24,3 @@ yarn-debug.log*
 yarn-error.log*
 
 #when running "netlify dev" these keep getting updated
-public/env.js
-public/index.html
