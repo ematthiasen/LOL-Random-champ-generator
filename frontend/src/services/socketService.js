@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client'
 
-const socketBaseUrl = '/'
+const socketBaseUrl = 'http://aramrandom.onrender.com:3003/'
 const socket = io(socketBaseUrl)
 
 const socketConnect = (setData, setSummonerLoading, displaySnackbarMessage, setMinMasteryCutoff, setMaxMasteryCutoff) => {
