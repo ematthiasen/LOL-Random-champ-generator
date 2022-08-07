@@ -7,7 +7,8 @@ const cors = require('cors')
 const summonerService = require('./services/summonerService')
 const championService = require('./services/championService')
 
-const summonerUtils = require('./utils/summoner')
+const summonerUtils = require('./utils/summonerUtils')
+const { CancelledError } = require('react-query')
 const app = express()
 app.use(cors())
 const server = http.createServer(app)
@@ -69,15 +70,86 @@ io.on('connection', (socket) => {
 
   socket.on('load-summoner', (summonerName) => {
     console.log('load-summoner called, received', summonerName)
-      summonerUtils.loadSummoner(summonerName, champList, data)
-        .then(updatedData => {
-          data = updatedData
-          io.to('summoner-room').emit('summoner-data', data)
-        })
-        .catch(error => {
-          console.log('error received')
-          io.to('summoner-room').emit('error', 'Unable to load summoner')
-        })
+    summonerUtils.loadSummoner(summonerName, champList, data)
+      .then(updatedData => {
+        data = updatedData
+        io.to('summoner-room').emit('summoner-data', data)
+        io.to('summoner-room').emit('snackbar-success', `added summoner ${summonerName}`)
+      })
+      .catch(error => {
+        console.log('error received', error.message)
+        io.to('summoner-room').emit('snackbar-error', error.message)
+      })
+  })
+
+  socket.on('delete-summoner', (summonerId) => {
+    console.log('delete summoner called, received', summonerId)
+    summonerUtils.deleteSummoner(summonerId, data)
+      .then(updatedData => {
+        data = updatedData
+        io.to('summoner-room').emit('summoner-data', data)
+        io.to('summoner-room').emit('snackbar-success', `deleted summoner`)
+      })
+      .catch(error => {
+        console.log('error received', error.message)
+        io.to('summoner-room').emit('snackbar-error', error.message)
+      })
+  })
+
+  socket.on('roll-summoner', (summonerId) => {
+    console.log('roll summoner, received ', summonerId)
+    summonerUtils.rollSummoner(summonerId, data)
+      .then(updatedData => {
+        data = updatedData
+        io.to('summoner-room').emit('summoner-data', data)
+      })
+      .catch(error => {
+        console.log('error received', error.message)
+        io.to('summoner-room').emit('snackbar-error', error.message)
+      })
+  })
+
+  socket.on('roll-team', (listId) => {
+    console.log('roll team, received ', listId)
+    summonerUtils.rollTeam(listId, data)
+      .then(updatedData => {
+        data = updatedData
+        io.to('summoner-room').emit('summoner-data', data)
+      })
+      .catch(error => {
+        console.log('error received', error.message)
+        io.to('summoner-room').emit('snackbar-error', error.message)
+      })
+  })
+
+  socket.on('edit-lists', ({updatedLists}) => {
+    console.log('edit lists called, received', updatedLists)
+    summonerUtils.editLists(updatedLists, data)
+      .then(updatedData => {
+        data = updatedData
+        io.to('summoner-room').emit('summoner-data', data)
+      })
+  } )
+
+  socket.on('max-mastery-cutoff', (maxMasteryCutoff) => {
+    console.log('starting max mastery cutoff')
+    data.masteryCutoff.max = maxMasteryCutoff
+    summonerUtils.updateMasteryCutoffs(data)
+      .then(updatedData => {
+        data = updatedData
+        io.to('summoner-room').emit('summoner-data', data)
+      })
+    //io.to('summoner-room').emit('updated-mastery-cutoff', data.masteryCutoff)
+  })
+
+  socket.on('min-mastery-cutoff', (minMasteryCutoff) => {
+    data.masteryCutoff.min = minMasteryCutoff
+    summonerUtils.updateMasteryCutoffs(data)
+      .then(updatedData => {
+        data = updatedData
+        io.to('summoner-room').emit('summoner-data', data)
+      })
+    //io.to('summoner-room').emit('updated-mastery-cutoff', data.masteryCutoff)
   })
 
   socket.on('disconnect', (reason) => {

@@ -3,13 +3,11 @@ import { createTheme, ThemeProvider } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 import React, { useEffect, useMemo, useState } from 'react'
 import championService from './services/championService'
-import summonerService from './services/summonerService'
 import TeamList from './components/TeamList'
 import { DragDropContext } from 'react-beautiful-dnd'
 import CloseIcon from '@mui/icons-material/Close'
 import Brightness4Icon from '@mui/icons-material/Brightness4'
 import Brightness7Icon from '@mui/icons-material/Brightness7'
-import SocketTest from './components/SocketTest'
 import socketService from './services/socketService'
 
 function App() {
@@ -24,7 +22,8 @@ function App() {
 
   const [ paletteMode, setPaletteMode ] = useState('dark')
   const [ summonerLoading, setSummonerLoading ] = useState(false)
-  
+
+
 
   const [ summonerStorageObject, setSummonerStorageObject ] = useState({
     summoners: {
@@ -68,28 +67,26 @@ function App() {
 
 
   useEffect(() => {
-    console.log('loading effect')
+    console.log('Useeffect get champions triggered')
     championService.getChampions()
       .then(champArray => {
         //console.log('setting champ List', champArray)
         setChampList(champArray)
         
-        console.log('champions data')
+        //console.log('champions data')
         console.log(champArray)
       })
 
   }, [])
 
-
-
   //connect to socket server and get updated summoner data object
   useEffect(() => {
-    socketService.socketConnect(setSummonerStorageObject, setSummonerLoading, displaySnackbarMessage)
-    
-  }, [])
+    socketService.socketConnect(setSummonerStorageObject, setSummonerLoading, displaySnackbarMessage, setMinMasteryCutoff, setMaxMasteryCutoff)
+  },[])
 
   //Snackbar notifications
   useEffect (() => {
+    console.log('useEffect snackbar triggered')
     if (snackbarList.length && !snackbarMessage) {
       setSnackbarMessage({...snackbarList[0]})
       setSnackbarList((prev) => prev.slice(1))
@@ -124,226 +121,35 @@ function App() {
 
   const handleMinMasteryCutoff = (event) => {
     event.preventDefault()
-    setMinMasteryCutoff(event.target.value)
-    console.log(summonerStorageObject.summoners)
-    // update filteredMasteries data for summoners
-
-    const updatedSummonerStorage = {
-      ...summonerStorageObject
-    }
-
-    for (const [key, summoner] of Object.entries(summonerStorageObject.summoners)) {
-      const newFilteredMasteries = summoner.masteries.filter(champ => maxMasteryCutoff > champ.championPoints && champ.championPoints > event.target.value )
-      console.log('summoner', summoner.name)
-      updatedSummonerStorage.summoners[key].filteredMasteries = newFilteredMasteries
-    }
-
-    storeLocalData(updatedSummonerStorage)
-    setSummonerStorageObject(
-      updatedSummonerStorage
-    )
+    socketService.sendMinMasteryCutoff(event.target.value)
   }
 
   const handleMaxMasteryCutoff = (event) => {
     event.preventDefault()
-    setMaxMasteryCutoff(event.target.value)
-    console.log(summonerStorageObject.summoners)
-    // update filteredMasteries data for summoners
-
-    const updatedSummonerStorage = {
-      ...summonerStorageObject
-    }
-
-    for (const [key, summoner] of Object.entries(summonerStorageObject.summoners)) {
-      const newFilteredMasteries = summoner.masteries.filter(champ => event.target.value > champ.championPoints && champ.championPoints > minMasteryCutoff )
-      console.log('summoner', summoner.name)
-      updatedSummonerStorage.summoners[key].filteredMasteries = newFilteredMasteries
-    }
-
-    storeLocalData(updatedSummonerStorage)
-    setSummonerStorageObject(
-      updatedSummonerStorage
-    )
-  }
-
+    socketService.sendMaxMasteryCutoff(event.target.value)
   
+  }
  
   const handleLoadSummoner = async (event) => {
     event.preventDefault()
     console.log('starting load summoner call')
 
-    /* Spin loading button
-    const [ summonerLoading, setSummonerLoading ] = useState(false)
-    */
     setSummonerLoading(true)
 
-    socketService.socketSendLoadSummoner(summonerName)
+    socketService.sendLoadSummoner(summonerName)
 
 
     setSummonerLoading(false)
 
-
-    /*
-
-    const summonerData = await summonerService.getSummoner(summonerName)
-    if (summonerData === null){
-      console.log('summoner not found')
-      displaySnackbarMessage('Unable to load summoner', 'warning')
-      setSummonerLoading(false)
-      return
-    }
-
-    //console.log('returned', summonerData)
-    const masteries = await summonerService.getSummonerMasteries(summonerData.id)
-    //console.log(masteries)
-    if (masteries === null){
-      console.log(`masteries for summoner ${summonerData.name} not found`)
-      displaySnackbarMessage('Unable to load summoner masteries', 'warning')
-      setSummonerLoading(false)
-      return
-    }
-    //populate masteries data with more champ information
-    masteries.map(masteryChamp => {
-      //find champ in champlist
-      const currentChamp = champList.find(champ => Number(champ.key) === masteryChamp.championId)
-      masteryChamp.name = currentChamp.name
-      masteryChamp.image = currentChamp.image
-      masteryChamp.tags = currentChamp.tags
-      return null
-    })
-
-    const filteredMasteries = masteries.filter(champ => maxMasteryCutoff > champ.championPoints && champ.championPoints > minMasteryCutoff )
-    console.log(minMasteryCutoff, maxMasteryCutoff)
-    console.log('champs before  filter', masteries.length)
-    console.log('champs after filter', filteredMasteries.length)
-
-
-    const newSummoner = {
-      ...summonerData,
-      masteries,
-      filteredMasteries,
-      randomChamps: [null, null, null]
-    }
-
-        const updatedSummonerStorage = {
-      ...summonerStorageObject,
-    }
-    
-    //console.log('Keys:', Object.keys(summonerStorageObject.summoners))
-    
-    //check if already in dataObject
-    if(summonerStorageObject.summoners.hasOwnProperty(newSummoner.id)) {
-      console.log('already in summonerlist, checking if in list')
-
-      let summonerInList = false
-      for (const key of Object.keys(summonerStorageObject.lists)) {
-        const returnValue = summonerStorageObject.lists[key].summoners.find(e => e === newSummoner.id)
-        if(returnValue !== undefined) {
-          summonerInList = true
-          console.log(`summoner found in list: ${key}`)
-        }
-
-      }
-      if(summonerInList) {
-        console.log('summoner already in a list')
-        setSummonerLoading(false)
-        return
-      } else {
-        console.log('summoner not in a list, adding to an empty list slot')
-      }
-    }
-    updatedSummonerStorage.summoners[newSummoner.id] = newSummoner
-
-    if (updatedSummonerStorage.lists['team1'].summoners.length < 3){
-      updatedSummonerStorage.lists['team1'].summoners.push(newSummoner.id)
-    } else if (updatedSummonerStorage.lists['team2'].summoners.length < 3) {
-      updatedSummonerStorage.lists['team2'].summoners.push(newSummoner.id)
-    } else {
-      // do not use bench, abort loading instead
-      displaySnackbarMessage(`Roster is full, no room for ${newSummoner.name}. Make room and try again`, 'error')
-      setSummonerLoading(false)
-      return
-      //updatedSummonerStorage.lists['bench'].summoners.push(newSummoner.id)
-    }
-        
-    console.log('Old summoner storage', summonerStorageObject)
-    console.log('New summoner storage', updatedSummonerStorage)
-
-    storeLocalData(updatedSummonerStorage)
-    setSummonerStorageObject(
-      updatedSummonerStorage
-    )
-    displaySnackbarMessage(`loaded summoner ${newSummoner.name}`, 'success')
-    setSummonerLoading(false)
-      */
   }
 
   const handleRollSummoner = (summonerId) => {
-    const randomChamps = rollSummoner(summonerId)
-
-    console.log('received rolled champs', randomChamps)
-
-    const updatedSummonerStorage = {
-      ...summonerStorageObject,
-    }
-
-    updatedSummonerStorage.summoners[summonerId].randomChamps = randomChamps
-    setSummonerStorageObject(updatedSummonerStorage)
+    socketService.sendRollSummoner(summonerId)
   }
-
-
-
-  const rollSummoner = (summonerId) => {
-    const currentSummoner = summonerStorageObject.summoners[summonerId]
-    console.log(`rolling for summoner ${currentSummoner.name}, available champs: ${currentSummoner.filteredMasteries.length}`)
-    
-    //TODO: implement criteria for valid rolls.
-    //for example, if preference for fighter, mage or tank is set, check that the champ fulfill the criteria
-    // or if a minimum of mastery level is allowed
-
-    const availableChamps = Array.from(currentSummoner.filteredMasteries)
-    //console.log('available champs', availableChamps, availableChamps.length)
-    const randomChampArray = [null, null, null]
-
-    const rolledChamps = randomChampArray.map((slot, index) => {
-      //console.log('index', index)
-      //console.log('available champs', availableChamps.length)
-      if(availableChamps.length > 0) {
-        const champId = availableChamps[Math.floor(Math.random() * availableChamps.length)].championId
-        //console.log('rolled', champId)
-        //console.log('removind index', availableChamps.findIndex(e => e.championId === champId), 1)
-        availableChamps.splice(availableChamps.findIndex(e => e.championId === champId), 1)
-        return champId
-      } else {
-        return null
-      }
-    })
-
-    console.log('rolled champs', rolledChamps)
-    return rolledChamps
-
-
-  }
-
 
   const rollTeam = (listId) => {
     console.log(`rolling random ${listId}`)
-    //for summoners in team 1 list
-    summonerStorageObject.lists[listId].summoners.map((summonerId) => {
-      const rolledChamps = rollSummoner(summonerId)
-      //TODO: implement criteria for valid rolls.
-      //for example, if preference for fighter, mage or tank is set, check that the champ fulfill the criteria
-      // or if a minimum of mastery level is allowed
-
-      const updatedSummonerStorage = {
-        ...summonerStorageObject,
-      }
-
-      updatedSummonerStorage.summoners[summonerId].randomChamps = rolledChamps
-      setSummonerStorageObject(updatedSummonerStorage)
-
-      return null
-    })
+    socketService.sendRollTeam(listId)
   }
 
 
@@ -354,10 +160,6 @@ function App() {
     return champ
   }
 
-
-  const storeLocalData = (summonerStorageObject) => {
-    window.localStorage.setItem('AramSummonerStorageObject', JSON.stringify(summonerStorageObject))
-  }
 
   const clearDataAndStorage = () => {
     window.localStorage.removeItem('AramSummonerStorageObject')
@@ -390,33 +192,8 @@ function App() {
     console.log('draggable ID:', draggableId)
 
     if(!destination) {
-      console.log('destination empty, deleting')
-      const sourceList = summonerStorageObject.lists[source.droppableId]
-      const sourceListOrder = Array.from(sourceList.summoners)
-      sourceListOrder.splice(source.index, 1)
+      console.log('destination empty, ignoring')
 
-      const newSourceList = {
-        ...sourceList,
-        summoners: sourceListOrder
-      }
-      
-      const newSummonerList = {
-        ...summonerStorageObject.summoners
-      }
-      delete newSummonerList[draggableId]
-
-
-      const newStorageObject = {
-        ...summonerStorageObject,
-        summoners: newSummonerList,
-        lists: {
-          ...summonerStorageObject.lists,
-          [newSourceList.id]: newSourceList
-        }
-      }
-      
-      storeLocalData(newStorageObject)
-      setSummonerStorageObject(newStorageObject)
       return
     }
 
@@ -425,7 +202,6 @@ function App() {
       //not moved
       return
     }
-
     else if( destination.droppableId === source.droppableId) {
       console.log('movement within same list')
 
@@ -434,23 +210,28 @@ function App() {
   
       destinationListOrder.splice(source.index, 1)
       destinationListOrder.splice(destination.index, 0, draggableId)
-  
-  
+
       const newDestinationList = {
         ...destinationList,
         summoners: destinationListOrder
       }
-  
+    
+      const updatedLists= {
+        ...summonerStorageObject.lists,
+        [newDestinationList.id]: newDestinationList,
+      }
+
       const newStorageObject = {
         ...summonerStorageObject,
-        lists: {
-          ...summonerStorageObject.lists,
-          [newDestinationList.id]: newDestinationList,
-        }
+        lists: updatedLists
       }
-      console.log('result of move: ', newStorageObject)
+      
+      console.log('result of move: ', updatedLists)
   
-      storeLocalData(newStorageObject)
+      socketService.sendUpdatedLists({
+        updatedLists
+      })
+
       setSummonerStorageObject(newStorageObject)
 
     } else {
@@ -468,62 +249,39 @@ function App() {
         ...sourceList,
         summoners: sourceListOrder
       }
-  
+      console.log('sourcelist', newSourceList)
+
       const newDestinationList = {
         ...destinationList,
         summoners: destinationListOrder
       }
-  
+      console.log('destinationList', newDestinationList)
+      
+      const updatedLists = {
+        ...summonerStorageObject.lists,
+        [newDestinationList.id]: newDestinationList,
+        [newSourceList.id]: newSourceList
+      }
+
       const newStorageObject = {
         ...summonerStorageObject,
-        lists: {
-          ...summonerStorageObject.lists,
-          [newDestinationList.id]: newDestinationList,
-          [newSourceList.id]: newSourceList
-        }
+        lists: updatedLists
       }
-      console.log('result of move: ', newStorageObject)
+      
+      console.log('result of move: ', updatedLists)
   
-      storeLocalData(newStorageObject)
+      socketService.sendUpdatedLists({
+        updatedLists
+      })
       setSummonerStorageObject(newStorageObject)
     }
+    
   }
 
   const deleteSummoner = (summonerId) => {
     console.log('delete summoner', summonerId)
-
-    const newSummonerList = {
-      ...summonerStorageObject.summoners
-    }
-    delete newSummonerList[summonerId]
-
-    const newStorageObject = {
-      ...summonerStorageObject,
-      summoners: newSummonerList,
-      lists: {
-        ...summonerStorageObject.lists,
-      }
-    }
-
-    for (const list of Object.values(summonerStorageObject.lists)){
-      const index = list.summoners.findIndex((summoner) => summoner === summonerId)
-      if (index !== -1){
-        console.log('hit in list', list.id, 'on index', index)
-
-        const newList = Array.from(list.summoners)
-        newList.splice(index, 1)
-        console.log('newlist', newList)
-        console.log('oldlist', list.summoners)
-        newStorageObject.lists[list.id].summoners = newList
-      }
-    }
-
-    storeLocalData(newStorageObject)
-    setSummonerStorageObject(newStorageObject)
-    displaySnackbarMessage('Deleted summoner', 'success')
-
+    socketService.sendDeleteSummoner(summonerId)
   }
-
 
   console.log('rendering storage object', summonerStorageObject)
 
@@ -537,7 +295,6 @@ function App() {
           </Toolbar>
         </AppBar>
         <Container sx={{ }} >
-        <SocketTest />
         <Grid container spacing={1} justifyContent='center' alignItems='flex-start' align='center' alignContent='center'>
           <DragDropContext onDragEnd={onDragEnd}>
             <Grid item xs={12} order={1}>
