@@ -14,6 +14,7 @@ const app = express()
 app.use(cors())
 
 const socketApp = express()
+socketApp.use(cors())
 const server = http.createServer(socketApp)
 
 app.use(express.json())
@@ -64,8 +65,9 @@ let data = {
 const io = socketIo(server, {
   // Needed - check for server deployment
   cors: {
-    origin: ['http://localhost:*', 'https://localhost:*', 'https://aramrandom.onrender.com:*'],
-    methods: ["GET", "POST"]
+    /*origin: ['http://localhost:3003', 'http://localhost:*', 'https://localhost:*', 'https://aramrandom.onrender.com:*'],*/
+    origin: '*',
+    //methods: ["GET", "POST"]
   }
   
 })
