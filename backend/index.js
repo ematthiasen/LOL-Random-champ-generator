@@ -8,7 +8,6 @@ const summonerService = require('./services/summonerService')
 const championService = require('./services/championService')
 
 const summonerUtils = require('./utils/summonerUtils')
-const { CancelledError } = require('react-query')
 const app = express()
 app.use(cors())
 const server = http.createServer(app)
