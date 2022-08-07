@@ -283,7 +283,7 @@ function App() {
     socketService.sendDeleteSummoner(summonerId)
   }
 
-  console.log('rendering storage object', summonerStorageObject)
+  //console.log('rendering storage object', summonerStorageObject)
 
   return (
       <ThemeProvider theme={customTheme}>
