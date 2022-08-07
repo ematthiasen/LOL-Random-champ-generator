@@ -1,13 +1,16 @@
+import axios from 'axios'
+
+const baseUrl = 'http://localhost:3002'
+
+
 const getSummoner = async (summonerName) => {
   try {
-    const result = await fetch(`/.netlify/functions/getSummoner?summonerName=${summonerName}`)
+    const result = await axios.get(`${baseUrl}/summoners/${summonerName}`)
   
-    if (result.status !== 200) {
-      console.log('statuscode other than 200')
-      return null
-    }
-    const resultJSON = await result.json()
-    return (resultJSON.data)
+    console.log('result.data', result.data)
+    //const resultJSON = await result.json()
+    //return (resultJSON.data)
+    return result.data
   } catch (error) {
     console.log('error', error)
     return null
@@ -16,13 +19,11 @@ const getSummoner = async (summonerName) => {
 
 const getSummonerMasteries = async (encryptedSummonerId) => {
   try {
-    const result = await fetch(`/.netlify/functions/getSummonerMasteries?encryptedSummonerId=${encryptedSummonerId}`)
-    if (result.status !== 200) {
-      console.log('statuscode other than 200')
-      return null
-    }
-    const resultJSON = await result.json()
-    return (resultJSON.data)
+    const result = await axios.get(`${baseUrl}/summoners/masteries/${encryptedSummonerId}`)
+    console.log('result dta', result.data)
+    //const resultJSON = await result.json()
+    //return (resultJSON.data)
+    return result.data
   } catch (error) {
     console.log('error', error)
     return null

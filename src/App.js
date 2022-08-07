@@ -9,6 +9,8 @@ import { DragDropContext } from 'react-beautiful-dnd'
 import CloseIcon from '@mui/icons-material/Close'
 import Brightness4Icon from '@mui/icons-material/Brightness4'
 import Brightness7Icon from '@mui/icons-material/Brightness7'
+import SocketTest from './components/SocketTest'
+import socketService from './services/socketService'
 
 function App() {
   const [ champList, setChampList ] = useState([])
@@ -22,15 +24,12 @@ function App() {
 
   const [ paletteMode, setPaletteMode ] = useState('dark')
   const [ summonerLoading, setSummonerLoading ] = useState(false)
+  
 
   const [ summonerStorageObject, setSummonerStorageObject ] = useState({
     summoners: {
     },
     lists: {
-      'bench': {
-        id: 'bench',
-        summoners: []
-      },
       'team1': {
         id: 'team1',
         summoners: []
@@ -81,13 +80,12 @@ function App() {
 
   }, [])
 
+
+
+  //connect to socket server and get updated summoner data object
   useEffect(() => {
-    const savedSummonerStorageObject = window.localStorage.getItem('AramSummonerStorageObject')
-    if(savedSummonerStorageObject) {
-      console.log('found summoner storage Object', savedSummonerStorageObject)
-      const savedSummonersData = JSON.parse(savedSummonerStorageObject)
-      setSummonerStorageObject(savedSummonersData)      
-    }
+    socketService.socketConnect(setSummonerStorageObject, setSummonerLoading, displaySnackbarMessage)
+    
   }, [])
 
   //Snackbar notifications
@@ -179,6 +177,13 @@ function App() {
     */
     setSummonerLoading(true)
 
+    socketService.socketSendLoadSummoner(summonerName)
+
+
+    setSummonerLoading(false)
+
+
+    /*
 
     const summonerData = await summonerService.getSummoner(summonerName)
     if (summonerData === null){
@@ -270,7 +275,7 @@ function App() {
     )
     displaySnackbarMessage(`loaded summoner ${newSummoner.name}`, 'success')
     setSummonerLoading(false)
-
+      */
   }
 
   const handleRollSummoner = (summonerId) => {
@@ -532,7 +537,7 @@ function App() {
           </Toolbar>
         </AppBar>
         <Container sx={{ }} >
-
+        <SocketTest />
         <Grid container spacing={1} justifyContent='center' alignItems='flex-start' align='center' alignContent='center'>
           <DragDropContext onDragEnd={onDragEnd}>
             <Grid item xs={12} order={1}>

@@ -1,3 +1,7 @@
+Branch socket-version:
+
+Use socket.io so that all players see the same picks and bans
+
 App running on: https://aramrandom.netlify.app/
 
 A simple app that generates random champions for League of Legends, when playing custom games with friends
