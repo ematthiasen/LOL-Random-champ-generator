@@ -13,9 +13,16 @@ const summonerUtils = require('./utils/summonerUtils')
 const app = express()
 app.use(cors())
 
-const socketApp = express()
-socketApp.use(cors())
-const server = http.createServer(socketApp)
+
+const server = http.createServer(app)
+const io = socketIo(server, {
+  // Needed - check for server deployment
+  cors: {
+    /*origin: ['http://localhost:3003', 'http://localhost:*', 'https://localhost:*', 'https://aramrandom.onrender.com:*'],*/
+    origin: '*',
+    //methods: ["GET", "POST"]
+  } 
+})
 
 app.use(express.json())
 app.use(express.static('build'))
@@ -62,15 +69,7 @@ let data = {
   }
 }
 
-const io = socketIo(server, {
-  // Needed - check for server deployment
-  cors: {
-    /*origin: ['http://localhost:3003', 'http://localhost:*', 'https://localhost:*', 'https://aramrandom.onrender.com:*'],*/
-    origin: '*',
-    //methods: ["GET", "POST"]
-  }
-  
-})
+
 
 io.on('connection', (socket) => {
   console.log('client connected', socket.id)
@@ -168,11 +167,12 @@ io.on('connection', (socket) => {
 })
 
 const PORT = process.env.PORT || 9999
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
-})
+//app.listen(PORT, () => {
+//  console.log(`Server running on port ${PORT}`)
+//})
 
-const SOCKET_PORT = process.env.SOCKET_PORT || 7777
+//const SOCKET_PORT = process.env.SOCKET_PORT || 7777
+const SOCKET_PORT = process.env.PORT || 7777
 server.listen(SOCKET_PORT, (err) => {
   console.log(`Socket.io server running on port ${SOCKET_PORT}`)
 })
