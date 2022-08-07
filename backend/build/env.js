@@ -225,7 +225,6 @@ window.env = {
   "npm_package_eslintConfig_extends_1": "react-app/jest",
   "npm_package_name": "aramrandom-socketversion-frontend",
   "npm_package_private": "true",
-  "npm_package_proxy": "http://localhost:3003",
   "npm_package_scripts_build": "react-dotenv && react-scripts build",
   "npm_package_scripts_eject": "react-scripts eject",
   "npm_package_scripts_start": "react-dotenv && react-scripts start",
