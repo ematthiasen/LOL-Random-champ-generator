@@ -1,11 +1,12 @@
 import { io } from 'socket.io-client'
 
-const socketBaseUrl = 'http://aramrandom.onrender.com:3003/'
+const socketBaseUrl = 'localhost:3003/'
 const socket = io(socketBaseUrl)
 
 const socketConnect = (setData, setSummonerLoading, displaySnackbarMessage, setMinMasteryCutoff, setMaxMasteryCutoff) => {
   socket.on('connect', () => console.log('socket id', socket.id))
-  socket.on('connect_error', () => {
+  socket.on('connect_error', (err) => {
+    console.log('connection error: ', err.message)
     setTimeout(() => socket.connect(), 5000)
   })
   socket.on('summoner-data', (data) => {
