@@ -1,4 +1,5 @@
-//require('dotenv').config()
+/* global process */
+require('dotenv').config()
 const express = require('express')
 
 const path = require('path')
@@ -11,7 +12,9 @@ const championService = require('./services/championService')
 const summonerUtils = require('./utils/summonerUtils')
 const app = express()
 app.use(cors())
-const server = http.createServer(app)
+
+const socketApp = express()
+const server = http.createServer(socketApp)
 
 app.use(express.json())
 app.use(express.static('build'))
@@ -61,7 +64,7 @@ let data = {
 const io = socketIo(server, {
   // Needed - check for server deployment
   cors: {
-    origin: ['http://localhost:*', 'https://aramrandom.onrender.com:*'],
+    origin: ['http://localhost:*', 'https://localhost:*', 'https://aramrandom.onrender.com:*'],
     methods: ["GET", "POST"]
   }
   
@@ -162,12 +165,6 @@ io.on('connection', (socket) => {
   })
 })
 
-
-
-app.get('/', (request, response) => {
-  response.send('<h1>Hello world</h1>')
-})
-
 const PORT = process.env.PORT || 9999
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
@@ -177,3 +174,5 @@ const SOCKET_PORT = process.env.SOCKET_PORT || 7777
 server.listen(SOCKET_PORT, (err) => {
   console.log(`Socket.io server running on port ${SOCKET_PORT}`)
 })
+
+console.log('path variable is', path.join(__dirname, ' '))
