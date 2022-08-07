@@ -12,9 +12,13 @@ const app = express()
 app.use(cors())
 const server = http.createServer(app)
 
-
 app.use(express.json())
+app.use(express.static('build'))
+//app.use('/static', express.static(path.join(__dirname, 'build//static')))
 
+app.get('*', function(req, res) {
+  res.sendFile('index.html', {root: path.join(__dirname, 'build/')})
+})
 
 let champList = []
 
@@ -156,56 +160,11 @@ io.on('connection', (socket) => {
   })
 })
 
-setInterval(() => {
-  io.to('summoner-room').emit('time', new Date())
-}, 1000)
-
 
 
 app.get('/', (request, response) => {
   response.send('<h1>Hello world</h1>')
 })
-
-app.get('/summoners', async (request, response) => {
-  /* Testing */
-  console.log('request params', request.params)
-  const summonerName = request.params.summonerName
-  const summonerData = await summonerService.getSummoner(summonerName)
-  const summonerMasteries = await summonerService.getSummonerMasteries('mCX3pdDDEqYgFXbZ6T8pA_rAJzm0H-lLtp4ZGe_BdEUamK8')
-  console.log(summonerMasteries)
-  response.json(summonerData)
-})
-
-app.get('/summoners/:summonerName', async (request, response) => {
-  /* Testing */
-  console.log('request params', request.params)
-  const summonerName = request.params.summonerName
-  const summonerData = await summonerService.getSummoner(summonerName)
-  //const summonerMasteries = await summonerService.getSummonerMasteries('mCX3pdDDEqYgFXbZ6T8pA_rAJzm0H-lLtp4ZGe_BdEUamK8')
-  //console.log(summonerMasteries)
-  response.json(summonerData)
-})
-
-app.get('/summoners/masteries/:encryptedSummonerId', async (request, response) => {
-  /* Testing */
-  console.log('request params', request.params)
-  const encryptedSummonerId = request.params.encryptedSummonerId
-  const masteryData = await summonerService.getSummonerMasteries(encryptedSummonerId)
-  //const summonerMasteries = await summonerService.getSummonerMasteries('mCX3pdDDEqYgFXbZ6T8pA_rAJzm0H-lLtp4ZGe_BdEUamK8')
-  //console.log(summonerMasteries)
-  response.json(masteryData)
-})
-
-app.post('/summoners', (request, response) => {
-  /* Testing */
-  console.log('worked?')
-  console.log(request.body)
-  data.summoners = request.body
-  response.status(200)
-  response.send() 
-})
-
-
 
 const PORT = process.env.PORT || 9999
 app.listen(PORT, () => {
