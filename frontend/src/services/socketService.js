@@ -1,6 +1,5 @@
 import { io } from 'socket.io-client'
 
-//const socketBaseUrl = 'https://aramrandom.onrender.com:3003/'
 const socket = io()
 
 const socketConnect = (setData, setSummonerLoading, displaySnackbarMessage, setMinMasteryCutoff, setMaxMasteryCutoff) => {
@@ -9,6 +8,7 @@ const socketConnect = (setData, setSummonerLoading, displaySnackbarMessage, setM
     console.log('connection error: ', err.message)
     setTimeout(() => socket.connect(), 5000)
   })
+  socket.on('connect-message', (message) => console.log(message))
   socket.on('summoner-data', (data) => {
     console.log('received data object', data)
     setMinMasteryCutoff(data.masteryCutoff.min)
@@ -57,6 +57,11 @@ const sendUpdatedLists = (updatedLists) => {
 
 }
 
+const joinLobby = (lobbyId) => {
+  console.log('attempt to join lobby', lobbyId)
+  socket.emit('join-lobby', lobbyId)
+}
+
 const sendRollSummoner = (summonerId) => {
   console.log('request roll for summoner', summonerId)  
   socket.emit('roll-summoner', summonerId)
@@ -83,7 +88,8 @@ const modules = {
   sendRollSummoner,
   sendRollTeam,
   sendMinMasteryCutoff,
-  sendMaxMasteryCutoff
+  sendMaxMasteryCutoff,
+  joinLobby
 }
 
 export default modules

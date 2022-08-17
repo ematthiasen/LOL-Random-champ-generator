@@ -74,7 +74,9 @@ let data = {
 io.on('connection', (socket) => {
   console.log('client connected', socket.id)
 
-  socket.join('summoner-room')
+  //socket.join('summoner-room')
+  io.to(socket.id).emit('connect-message', 'you have connected, join a room')
+
   io.to('summoner-room').emit('summoner-data', data)
 
   socket.on('load-summoner', (summonerName) => {

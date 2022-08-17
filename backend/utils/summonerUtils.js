@@ -4,15 +4,11 @@ const loadSummoner = async (summonerName, champList, summonerStorageObject) => {
   console.log('started trying')
   try {
     const summonerData = await summonerService.getSummoner(summonerName)
-    //console.log('received summoner Data')
     const masteries = await summonerService.getSummonerMasteries(summonerData.id)
-    //console.log('received mastery Data')
-    //console.log('champlist is', champList)
-    //console.log(masteries[0])
+
     masteries.map(masteryChamp => {
 
       const currentChamp = champList.find(champ => {
-        //console.log(champ)
         //console.log('compare', champ.key, masteryChamp.championId)
         return Number(champ.key) === masteryChamp.championId
       })
