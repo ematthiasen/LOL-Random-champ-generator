@@ -23,6 +23,10 @@ function App() {
   const [ paletteMode, setPaletteMode ] = useState('dark')
   const [ summonerLoading, setSummonerLoading ] = useState(false)
 
+  //make a context for summoners and for lists
+
+
+
   const [ summonerStorageObject, setSummonerStorageObject ] = useState({
     summoners: {
     },
@@ -124,50 +128,6 @@ function App() {
   }
 
 
-  const handleMinMasteryCutoff = (event) => {
-    event.preventDefault()
-    setMinMasteryCutoff(event.target.value)
-    console.log(summonerStorageObject.summoners)
-    // update filteredMasteries data for summoners
-
-    const updatedSummonerStorage = {
-      ...summonerStorageObject
-    }
-
-    for (const [key, summoner] of Object.entries(summonerStorageObject.summoners)) {
-      const newFilteredMasteries = summoner.masteries.filter(champ => maxMasteryCutoff > champ.championPoints && champ.championPoints > event.target.value )
-      console.log('summoner', summoner.name)
-      updatedSummonerStorage.summoners[key].filteredMasteries = newFilteredMasteries
-    }
-
-    storeLocalData(updatedSummonerStorage)
-    setSummonerStorageObject(
-      updatedSummonerStorage
-    )
-  }
-
-  const handleMaxMasteryCutoff = (event) => {
-    event.preventDefault()
-    setMaxMasteryCutoff(event.target.value)
-    console.log(summonerStorageObject.summoners)
-    // update filteredMasteries data for summoners
-
-    const updatedSummonerStorage = {
-      ...summonerStorageObject
-    }
-
-    for (const [key, summoner] of Object.entries(summonerStorageObject.summoners)) {
-      const newFilteredMasteries = summoner.masteries.filter(champ => event.target.value > champ.championPoints && champ.championPoints > minMasteryCutoff )
-      console.log('summoner', summoner.name)
-      updatedSummonerStorage.summoners[key].filteredMasteries = newFilteredMasteries
-    }
-
-    storeLocalData(updatedSummonerStorage)
-    setSummonerStorageObject(
-      updatedSummonerStorage
-    )
-  }
-
   
  
   const handleLoadSummoner = async (event) => {
@@ -179,6 +139,18 @@ function App() {
     */
     setSummonerLoading(true)
 
+    // step 1. get data on summoner from developer api
+      // if fails, abort
+      // add empty mastery data list?
+      // add empty filtered masteries list?
+      // add empty random champions list?
+    // step 2. get the mastery data for that summoner.
+      // if no mastery data, abort?
+    // step 3. populate mastery data with champion information
+
+    // step 4. create the filtered masteries list for the champion
+    
+    // step 5. return
 
     const summonerData = await summonerService.getSummoner(summonerName)
     if (summonerData === null){
@@ -520,7 +492,7 @@ function App() {
   }
 
 
-  console.log('rendering storage object', summonerStorageObject)
+  //console.log('rendering storage object', summonerStorageObject)
 
   return (
       <ThemeProvider theme={customTheme}>
