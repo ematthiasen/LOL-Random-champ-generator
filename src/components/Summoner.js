@@ -99,7 +99,7 @@ const Summoner = ({summoner, index, deleteSummoner, handleRollSummoner}) => {
                   } else {
                     return (
                       <Stack key={uuidv4()} alignItems='center' width={80}>
-                        <Box display={{ xs: 'none', md: 'flex' }} sx={{ height: 80, width: 80, bgcolor: 'black' }} alignItems='center' justifyContent='center'><Typography variant='h6' align='center' >?</Typography></Box>
+                        <Box display={{ xs: 'none', md: 'flex' }} sx={{ height: 80, width: 80, bgcolor: 'black' }} alignItems='center' justifyContent='center'><Typography variant='h6' align='center' color='white' >?</Typography></Box>
                         <Typography variant='body2' align='center'>{index+1}: ?</Typography>
                       </Stack>
                     )

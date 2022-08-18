@@ -1,3 +1,4 @@
+import { Grid, TextField } from "@mui/material"
 import { useState } from "react"
 
 const MasterySettings = () => {
@@ -10,8 +11,14 @@ const MasterySettings = () => {
   const handleMinMasteryCutoff = (event) => {
     event.preventDefault()
     setMinMasteryCutoff(event.target.value)
-    console.log(summonerStorageObject.summoners)
+
+    // Changing the mastery cutoffs affects the available champions for each summoner. 
+    // List of available champs need to be generated again for all summoners
+    // Handle this in the summonerContext?
+
     // update filteredMasteries data for summoners
+    // Move to a separate function?
+    /*
 
     const updatedSummonerStorage = {
       ...summonerStorageObject
@@ -27,11 +34,17 @@ const MasterySettings = () => {
     setSummonerStorageObject(
       updatedSummonerStorage
     )
+
+    */
+
   }
 
   const handleMaxMasteryCutoff = (event) => {
     event.preventDefault()
+
+
     setMaxMasteryCutoff(event.target.value)
+    /*
     console.log(summonerStorageObject.summoners)
     // update filteredMasteries data for summoners
 
@@ -49,12 +62,14 @@ const MasterySettings = () => {
     setSummonerStorageObject(
       updatedSummonerStorage
     )
+    */
   }
 
   return (
-    <div>
-      Test mastery component
-    </div>
+    <Grid item order={{ xs: 4 }} xs={12}>
+      <TextField size='small' id='mastery-minimum-point-cutoff' type='number' label='Minimum mastery points' variant='outlined' value={minMasteryCutoff} onChange={handleMinMasteryCutoff} />
+      <TextField size='small' id='mastery-maximum-point-cutoff' type='number' label='Maximum mastery points' variant='outlined' value={maxMasteryCutoff} onChange={handleMaxMasteryCutoff} />
+    </Grid>
   )
 
 

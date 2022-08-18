@@ -7,7 +7,14 @@ const useSummonerContext = () => {
   if (!context) {
     throw new Error('useSummonerContext must be used inside a SummonerContextProvider')
   }
-  return context
+
+  const [ summoners, setSummoners ] = context
+
+  const addSummoner = (summonerObject) => {
+    summoners[summonerObject.id] = summonerObject
+  }
+
+  return [ summoners, setSummoners, addSummoner ]
 }
 
 const SummonerContextProvider = (props) => {

@@ -1,14 +1,13 @@
-import { Alert, Button, Grid, IconButton, Snackbar, Stack, TextField, CircularProgress } from "@mui/material"
-import { useMemo, useState, useEffect, useContext } from "react"
+import { Button, Grid, } from "@mui/material"
+import { useState, useEffect } from "react"
 import { DragDropContext } from "react-beautiful-dnd"
-import { useLocation } from "react-router-dom"
 import TeamList from "./TeamList"
-import CloseIcon from '@mui/icons-material/Close'
-import socketService from '../services/socketService'
 import championService from '../services/championService'
 import { useSummonerContext } from "../contexts/summonerContext"
 import { useTeamlistContext } from "../contexts/teamlistContext"
-import summonerService from '../services/summonerService'
+import { useSnackbarContext } from "../contexts/snackbarContext"
+import SummonerLoadingPanel from "./SummonerLoadingPanel"
+
 
 const Lobby = () => {
   const [ summoners, setSummoners ] = useSummonerContext()
@@ -21,11 +20,6 @@ const Lobby = () => {
   const [ summonerName, setSummonerName] = useState('')
 
   const [ summonerLoading, setSummonerLoading ] = useState(false)
-
-  //Snackbar related
-  const [ snackbarList, setSnackbarList ] = useState([])
-  const [ snackbarOpen, setSnackbarOpen ] = useState(false)
-  const [ snackbarMessage, setSnackbarMessage ] = useState(undefined)
 
   
 
@@ -43,46 +37,36 @@ const Lobby = () => {
 
   }, [])
 
-  //Snackbar notifications
-  useEffect (() => {
-    console.log('useEffect snackbar triggered')
-    if (snackbarList.length && !snackbarMessage) {
-      setSnackbarMessage({...snackbarList[0]})
-      setSnackbarList((prev) => prev.slice(1))
-      setSnackbarOpen(true)
-      console.log('set snackbar Message', {...snackbarList[0]})
-    } else if (snackbarList.length && snackbarMessage && snackbarOpen) {
-      setSnackbarOpen(false)
+  // update for new states.
+  useEffect(() => {
+    const savedSummonerStorageObject = window.localStorage.getItem('AramSummonerStorageObject')
+    if(savedSummonerStorageObject) {
+      console.log('found summoner storage Object', savedSummonerStorageObject)
+      const savedSummonersData = JSON.parse(savedSummonerStorageObject)
+      const { storedSummoners, storedTeamlist } = savedSummonersData
+      setSummoners(storedSummoners)
+      setTeamlist(storedTeamlist)  
     }
-  }, [snackbarList, snackbarMessage, snackbarOpen]) 
+  }, [])
 
-  const handleSnackbarClose = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-    setSnackbarOpen(false)
-  }
+  const { displaySnackbarMessage } = useSnackbarContext()
 
-  const handleSnackbarExited = () => {
-    setSnackbarMessage(undefined)
-  }
-
-  const displaySnackbarMessage = (message, type ) => {
-    setSnackbarList((prev) => [...prev, { message, type }])
-  }
-
+  
   const handleRollSummoner = (summonerId) => {
-    socketService.sendRollSummoner(summonerId)
+    //fix
+    //socketService.sendRollSummoner(summonerId)
   }
 
   const rollTeam = (listId) => {
     console.log(`rolling random ${listId}`)
-    socketService.sendRollTeam(listId)
+    //fix
+    //fixsocketService.sendRollTeam(listId)
   }
   
   const deleteSummoner = (summonerId) => {
     console.log('delete summoner', summonerId)
-    socketService.sendDeleteSummoner(summonerId)
+    //fix
+    //socketService.sendDeleteSummoner(summonerId)
   }
 
   const getChampionData = (championId) => {
@@ -91,29 +75,6 @@ const Lobby = () => {
     //console.log('Champ', champ)
     return champ
   }
-  const clearDataAndStorage = () => {
-    window.localStorage.removeItem('AramSummonerStorageObject')
-    setSummonerStorageObject({
-      summoners: {
-      },
-      lists: {
-        'bench': {
-          id: 'bench',
-          summoners: []
-        },
-        'team1': {
-          id: 'team1',
-          summoners: []
-        },
-        'team2': {
-          id: 'team2',
-          summoners: []
-        }
-      },
-      listOrder: ['team1', 'team2']
-    })
-  }
-
 
   const onDragEnd = (result) => {
     const { destination, source, draggableId} = result
@@ -189,162 +150,28 @@ const Lobby = () => {
     
   }
 
-
-  const handleLoadSummoner = async (event) => {
-    event.preventDefault()
-    console.log('starting load summoner call')
-
-    /* Spin loading button
-    const [ summonerLoading, setSummonerLoading ] = useState(false)
-    */
-    setSummonerLoading(true)
-
-    const summonerData = await summonerService.getSummoner(summonerName)
-    if (summonerData === null){
-      console.log('summoner not found')
-      displaySnackbarMessage('Unable to load summoner', 'warning')
-      setSummonerLoading(false)
-      return
-    }
-
-    //console.log('returned', summonerData)
-    const masteries = await summonerService.getSummonerMasteries(summonerData.id)
-    //console.log(masteries)
-    if (masteries === null){
-      console.log(`masteries for summoner ${summonerData.name} not found`)
-      displaySnackbarMessage('Unable to load summoner masteries', 'warning')
-      setSummonerLoading(false)
-      return
-    }
-    //populate masteries data with more champ information
-    masteries.map(masteryChamp => {
-      //find champ in champlist
-      const currentChamp = champList.find(champ => Number(champ.key) === masteryChamp.championId)
-      masteryChamp.name = currentChamp.name
-      masteryChamp.image = currentChamp.image
-      masteryChamp.tags = currentChamp.tags
-      return null
-    })
-
-    const filteredMasteries = masteries.filter(champ => maxMasteryCutoff > champ.championPoints && champ.championPoints > minMasteryCutoff )
-    console.log(minMasteryCutoff, maxMasteryCutoff)
-    console.log('champs before  filter', masteries.length)
-    console.log('champs after filter', filteredMasteries.length)
-
-
-    const newSummoner = {
-      ...summonerData,
-      masteries,
-      filteredMasteries,
-      randomChamps: [null, null, null]
-    }
-
-        const updatedSummonerStorage = {
-      ...summonerStorageObject,
-    }
-    
-    //console.log('Keys:', Object.keys(summonerStorageObject.summoners))
-    
-    //check if already in dataObject
-    if(summonerStorageObject.summoners.hasOwnProperty(newSummoner.id)) {
-      console.log('already in summonerlist, checking if in list')
-
-      let summonerInList = false
-      for (const key of Object.keys(summonerStorageObject.lists)) {
-        const returnValue = summonerStorageObject.lists[key].summoners.find(e => e === newSummoner.id)
-        if(returnValue !== undefined) {
-          summonerInList = true
-          console.log(`summoner found in list: ${key}`)
-        }
-
-      }
-      if(summonerInList) {
-        console.log('summoner already in a list')
-        setSummonerLoading(false)
-        return
-      } else {
-        console.log('summoner not in a list, adding to an empty list slot')
-      }
-    }
-    updatedSummonerStorage.summoners[newSummoner.id] = newSummoner
-
-    if (updatedSummonerStorage.lists['team1'].summoners.length < 3){
-      updatedSummonerStorage.lists['team1'].summoners.push(newSummoner.id)
-    } else if (updatedSummonerStorage.lists['team2'].summoners.length < 3) {
-      updatedSummonerStorage.lists['team2'].summoners.push(newSummoner.id)
-    } else {
-      // do not use bench, abort loading instead
-      displaySnackbarMessage(`Roster is full, no room for ${newSummoner.name}. Make room and try again`, 'error')
-      setSummonerLoading(false)
-      return
-      //updatedSummonerStorage.lists['bench'].summoners.push(newSummoner.id)
-    }
-        
-    console.log('Old summoner storage', summonerStorageObject)
-    console.log('New summoner storage', updatedSummonerStorage)
-
-    storeLocalData(updatedSummonerStorage)
-    setSummonerStorageObject(
-      updatedSummonerStorage
-    )
-    displaySnackbarMessage(`loaded summoner ${newSummoner.name}`, 'success')
-    setSummonerLoading(false)
-
-  }
-
-
-
-
-
   if (champList.length === 0) {
     console.log('champlist not yet loaded')
-    return <div>Waiting</div>
-  } else if(!lobbyId)
-    return (
-      <div>No lobby specified.
-        Back
-        Cancel
-        Whatever
-      </div>
-    )
-  else
-    return (
+    return <div>Waiting for champions to load</div>
+  } else 
+  return (
         <>
-        <Grid container spacing={1} justifyContent='center' alignItems='flex-start' align='center' alignContent='center'>
         <DragDropContext onDragEnd={onDragEnd}>
-          <Grid item xs={12} order={1}>
-      
-            
-          </Grid>
           <Grid item display='flex' xs={6} md={3} order={{ xs:3, md: 2 }} sx={{ p: 1, }} justifyContent='right'>
             <Button variant='contained' onClick={() => rollTeam('team1')} sx={{ }} >Roll Team 1</Button>
           </Grid>
-          <Grid item flexShrink xs={12} md={6} order={{ xs: 2 }} >
-            <form onSubmit={handleLoadSummoner}>
-              <Stack direction='row' justifyContent='center' xs={8} >
-                <TextField id='summoner-name' label='Summoner name' variant='outlined' value={summonerName} onChange={(event) => setSummonerName(event.target.value)} />
-                <Button id='load-summoner' onClick={handleLoadSummoner} variant='outlined'>{summonerLoading ? <CircularProgress /> : 'Load'}</Button>
-                <Button variant='outlined' onClick={clearDataAndStorage} sx={{ ml: 2}}>Clear data</Button>
-              </Stack>
-            </form>
-
-          </Grid>
+          <SummonerLoadingPanel champList={champList} />
           <Grid item display='flex' xs={6} md={3} order={{ xs: 3, md: 2 }} sx={{ p: 1}}  justifyContent='left'>
             <Button variant='contained' onClick={() => rollTeam('team2')}>Roll Team 2</Button>
           </Grid>
-          <Grid item order={{ xs: 4 }} xs={12}>
-            <TextField size='small' id='mastery-minimum-point-cutoff' type='number' label='Minimum mastery points' variant='outlined' value={minMasteryCutoff} onChange={handleMinMasteryCutoff} />
-            <TextField size='small' id='mastery-maximum-point-cutoff' type='number' label='Maximum mastery points' variant='outlined' value={maxMasteryCutoff} onChange={handleMaxMasteryCutoff} />
-          </Grid>
           <br />
-          
-            {summonerStorageObject.listOrder.map(listId => {
-              const list = summonerStorageObject.lists[listId]
+            {['team1', 'team2'].map(listId => {
+              const list = teamlist[listId]
               return  (
                 <TeamList
                   key={listId} 
                   teamList={list} 
-                  summoners={summonerStorageObject.summoners} 
+                  summoners={summoners} 
                   getChampData={getChampionData} 
                   deleteSummoner={deleteSummoner} 
                   handleRollSummoner={handleRollSummoner} 
@@ -352,19 +179,7 @@ const Lobby = () => {
                 />
               )
             })}
-          
         </DragDropContext>
-      </Grid>
-      <Snackbar
-        key={snackbarMessage ? snackbarMessage.message : undefined}
-        open={snackbarOpen}
-        autoHideDuration={5000}
-        onClose={handleSnackbarClose} 
-        TransitionProps={{ onExited: handleSnackbarExited}}
-      >
-        <Alert severity={snackbarMessage ? snackbarMessage.type : undefined} action={<IconButton onClick={handleSnackbarClose}><CloseIcon /></IconButton>}>{snackbarMessage ? snackbarMessage.message : undefined}</Alert>
-      </Snackbar>
-
     </>
     )
 }
