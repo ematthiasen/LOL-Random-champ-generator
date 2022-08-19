@@ -56,17 +56,17 @@ function App() {
           </Toolbar>
         </AppBar>
         <SnackbarContextProvider>
-        <SummonerContextProvider>
-          <TeamlistContextProvider>
-            <Container sx={{ }} >
-              <Grid container spacing={1} justifyContent='center' alignItems='flex-start' align='center' alignContent='center'>
-                <MasterySettings />
-                <Lobby />
-              </Grid>
-            </Container>
-              <SnackbarDisplay />
-          </TeamlistContextProvider>
-        </SummonerContextProvider>
+          <SummonerContextProvider>
+            <TeamlistContextProvider>
+              <Container sx={{ }} >
+                <Grid container spacing={1} justifyContent='center' alignItems='flex-start' align='center' alignContent='center'>
+                  <MasterySettings />
+                  <Lobby />
+                </Grid>
+              </Container>
+                <SnackbarDisplay />
+            </TeamlistContextProvider>
+          </SummonerContextProvider>
         </SnackbarContextProvider>
     </ThemeProvider>
   )

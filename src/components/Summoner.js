@@ -1,4 +1,4 @@
-import { Box, Stack, Typography, ListItem, ListItemButton, Tooltip, IconButton } from "@mui/material"
+import { Box, Stack, Typography, ListItem, ListItemButton, Tooltip, IconButton, CircularProgress } from "@mui/material"
 import { Draggable } from "react-beautiful-dnd"
 import assassin from '../images/assassin.png'
 import fighter from '../images/fighter.png'
@@ -10,8 +10,16 @@ import { v4 as uuidv4 } from 'uuid'
 import DeleteIcon from '@mui/icons-material/Delete'
 import RerollIcon from '@mui/icons-material/Replay'
 import SettingsIcon from '@mui/icons-material/MoreVert'
+import { useSummonerContext } from "../contexts/summonerContext"
+import { useTeamlistContext } from "../contexts/teamlistContext"
+import { useSnackbarContext } from "../contexts/snackbarContext"
 
-const Summoner = ({summoner, index, deleteSummoner, handleRollSummoner}) => {
+const Summoner = ({summoner, index }) => {
+
+  const [ summoners, setSummoners, addSummoner, rollSummoner, deleteSummoner ] = useSummonerContext()
+  const [ teamlist, setTeamlist, addSummonerToTeamlist, deleteSummonerFromTeamlist ] = useTeamlistContext()
+
+  const { displaySnackbarMessage } = useSnackbarContext()
 
   const roleTypes = {
     'Assassin': {
@@ -40,6 +48,20 @@ const Summoner = ({summoner, index, deleteSummoner, handleRollSummoner}) => {
     }
   }
 
+  const handleRollSummoner = () => {
+    const newSummoners = rollSummoner(summoner)
+    //fix
+    //socketService.sendRollSummoner(summonerId)
+    window.localStorage.setItem('AramSummonerStorageObject', JSON.stringify({ storedSummoners: newSummoners, storedTeamlist: teamlist }))
+  }
+
+  const handleDeleteSummoner = () => {
+    const newTeamlist = deleteSummonerFromTeamlist(summoner.id)
+    const newSummoners = deleteSummoner(summoner.id)
+    window.localStorage.setItem('AramSummonerStorageObject', JSON.stringify({ storedSummoners: newSummoners, storedTeamlist: newTeamlist }))
+    displaySnackbarMessage(`Summoner ${summoner.name} was successfully deleted`, 'success' )
+  }
+
   const champImageColumnSize = 75
 
   return (
@@ -60,12 +82,12 @@ const Summoner = ({summoner, index, deleteSummoner, handleRollSummoner}) => {
                 <Typography variant='caption'>{summoner.filteredMasteries.length}</Typography>
                 <Box>
                   <Tooltip title='remove summoner'>
-                    <IconButton onClick={() => deleteSummoner(summoner.id)}>
+                    <IconButton onClick={() => handleDeleteSummoner()}>
                       <DeleteIcon />
                     </IconButton>
                   </Tooltip>
                   <Tooltip title='Reroll champions for this summoner'>
-                    <IconButton onClick={() => handleRollSummoner(summoner.id)}>
+                    <IconButton onClick={() => handleRollSummoner()}>
                       <RerollIcon />
                     </IconButton>
                   </Tooltip>

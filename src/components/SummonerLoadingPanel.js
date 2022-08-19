@@ -4,14 +4,17 @@ import { useState } from 'react'
 import summonerService from '../services/summonerService'
 import { useSummonerContext } from '../contexts/summonerContext'
 import { useTeamlistContext } from '../contexts/teamlistContext'
+import { useSnackbarContext } from '../contexts/snackbarContext'
 
 const SummonerLoadingPanel = ({ champList }) => {
   //Form input related
   const [ summonerName, setSummonerName] = useState('')
   const [ summonerLoading, setSummonerLoading ] = useState(false)
 
-  const [ , setSummoners , addSummoner ] = useSummonerContext()
-  const [ , setTeamlist , addSummonerToTeamlist ] = useTeamlistContext()
+  const [ summoners, setSummoners , addSummoner ] = useSummonerContext()
+  const [ teamlist, setTeamlist , addSummonerToTeamlist ] = useTeamlistContext()
+
+  const { displaySnackbarMessage } = useSnackbarContext()
 
   // make a context for the mastery cutoffs
   //placeholder data
@@ -19,7 +22,8 @@ const SummonerLoadingPanel = ({ champList }) => {
   const maxMasteryCutoff = 999999
 
 
-  const handleLoadSummoner = async () => {
+  const handleLoadSummoner = async (event) => {
+    event.preventDefault()
     console.log('clicked handle load summoner')
     setSummonerLoading(true)
     try {
@@ -29,14 +33,15 @@ const SummonerLoadingPanel = ({ champList }) => {
       // apply filter
       summonerData = summonerService.generateFilteredMasteries(summonerData, minMasteryCutoff, maxMasteryCutoff)
 
-      addSummonerToTeamlist(summonerData)
+      const newTeamlist = addSummonerToTeamlist(summonerData)
       // Errors if summoner is already in a teamlist or roster is full
-      addSummoner(summonerData)
-      
+      const newSummoners = addSummoner(summonerData)
       setSummonerLoading(false)
+      window.localStorage.setItem('AramSummonerStorageObject', JSON.stringify({ storedSummoners: newSummoners, storedTeamlist: newTeamlist }))
+      displaySnackbarMessage(`Summoner ${summonerData.name} loaded`, 'success')
     } catch (error) {
-      console.log('caught error in handleLoadSummoner')
       setSummonerLoading(false)
+      displaySnackbarMessage(`Failed to load summoner ${summonerName}: ${error.message}`, 'error')
     }
   }
 

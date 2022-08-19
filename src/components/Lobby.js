@@ -10,34 +10,25 @@ import SummonerLoadingPanel from "./SummonerLoadingPanel"
 
 
 const Lobby = () => {
-  const [ summoners, setSummoners ] = useSummonerContext()
+  const [ summoners, setSummoners, addSummoner, rollSummoner, deleteSummoner ] = useSummonerContext()
   const [ teamlist, setTeamlist ] = useTeamlistContext()
 
   const [ champList, setChampList ] = useState([])
 
-
-  //Form input related
-  const [ summonerName, setSummonerName] = useState('')
-
-  const [ summonerLoading, setSummonerLoading ] = useState(false)
-
-  
+  const { displaySnackbarMessage } = useSnackbarContext()
 
   //champlist
   useEffect(() => {
     console.log('Useeffect get champions triggered')
     championService.getChampions()
       .then(champArray => {
-        //console.log('setting champ List', champArray)
         setChampList(champArray)
-        
-        //console.log('champions data')
-        console.log(champArray)
+        //console.log('champions data', champArray)
       })
 
   }, [])
-
-  // update for new states.
+  
+  // include mastery
   useEffect(() => {
     const savedSummonerStorageObject = window.localStorage.getItem('AramSummonerStorageObject')
     if(savedSummonerStorageObject) {
@@ -49,26 +40,17 @@ const Lobby = () => {
     }
   }, [])
 
-  const { displaySnackbarMessage } = useSnackbarContext()
-
-  
-  const handleRollSummoner = (summonerId) => {
-    //fix
-    //socketService.sendRollSummoner(summonerId)
-  }
 
   const rollTeam = (listId) => {
     console.log(`rolling random ${listId}`)
-    //fix
-    //fixsocketService.sendRollTeam(listId)
+    let newSummoners = {}
+    teamlist[listId].summoners.map((summonerId) => {
+      newSummoners = rollSummoner(summoners[summonerId])
+      return null      
+    })
+    window.localStorage.setItem('AramSummonerStorageObject', JSON.stringify({ storedSummoners: newSummoners, storedTeamlist: teamlist }))
   }
   
-  const deleteSummoner = (summonerId) => {
-    console.log('delete summoner', summonerId)
-    //fix
-    //socketService.sendDeleteSummoner(summonerId)
-  }
-
   const getChampionData = (championId) => {
     //console.log('checking id', championId)
     const champ = champList.find((champ) => Number(champ.key) === championId)
@@ -114,6 +96,7 @@ const Lobby = () => {
 
       console.log('result of move: ', updatedLists)
       setTeamlist(updatedLists)
+      window.localStorage.setItem('AramSummonerStorageObject', JSON.stringify({ storedSummoners: summoners, storedTeamlist: updatedLists }))
 
     } else {
       console.log('movement between lists')
@@ -146,6 +129,7 @@ const Lobby = () => {
       
       console.log('result of move: ', updatedLists)
       setTeamlist(updatedLists)
+      window.localStorage.setItem('AramSummonerStorageObject', JSON.stringify({ storedSummoners: summoners, storedTeamlist: updatedLists }))
     }
     
   }
@@ -173,8 +157,6 @@ const Lobby = () => {
                   teamList={list} 
                   summoners={summoners} 
                   getChampData={getChampionData} 
-                  deleteSummoner={deleteSummoner} 
-                  handleRollSummoner={handleRollSummoner} 
                   direction='vertical'
                 />
               )
