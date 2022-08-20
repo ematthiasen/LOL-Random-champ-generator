@@ -1,4 +1,4 @@
-import { Box, Stack, Typography, ListItem, ListItemButton, Tooltip, IconButton, CircularProgress } from "@mui/material"
+import { Box, Stack, Typography, ListItem, ListItemButton, Tooltip, IconButton } from "@mui/material"
 import { Draggable } from "react-beautiful-dnd"
 import assassin from '../images/assassin.png'
 import fighter from '../images/fighter.png'

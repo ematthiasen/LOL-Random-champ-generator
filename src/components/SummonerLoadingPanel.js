@@ -11,8 +11,8 @@ const SummonerLoadingPanel = ({ champList }) => {
   const [ summonerName, setSummonerName] = useState('')
   const [ summonerLoading, setSummonerLoading ] = useState(false)
 
-  const [ summoners, setSummoners , addSummoner ] = useSummonerContext()
-  const [ teamlist, setTeamlist , addSummonerToTeamlist ] = useTeamlistContext()
+  const [ , setSummoners , addSummoner ] = useSummonerContext()
+  const [ , setTeamlist , addSummonerToTeamlist ] = useTeamlistContext()
 
   const { displaySnackbarMessage } = useSnackbarContext()
 

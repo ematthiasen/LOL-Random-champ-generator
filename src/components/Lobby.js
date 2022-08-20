@@ -5,17 +5,14 @@ import TeamList from "./TeamList"
 import championService from '../services/championService'
 import { useSummonerContext } from "../contexts/summonerContext"
 import { useTeamlistContext } from "../contexts/teamlistContext"
-import { useSnackbarContext } from "../contexts/snackbarContext"
 import SummonerLoadingPanel from "./SummonerLoadingPanel"
 
 
 const Lobby = () => {
-  const [ summoners, setSummoners, addSummoner, rollSummoner, deleteSummoner ] = useSummonerContext()
+  const [ summoners, , , rollSummoner,  ] = useSummonerContext()
   const [ teamlist, setTeamlist ] = useTeamlistContext()
 
   const [ champList, setChampList ] = useState([])
-
-  const { displaySnackbarMessage } = useSnackbarContext()
 
   //champlist
   useEffect(() => {
@@ -47,13 +44,11 @@ const Lobby = () => {
 
   const rollTeam = (listId) => {
     console.log(`rolling random ${listId}`)
-    let newSummoners = {}
+
     teamlist[listId].summoners.map((summonerId) => {
-      newSummoners = rollSummoner(summoners[summonerId])
+      rollSummoner(summoners[summonerId])
       return null      
     })
-    //no longer needed, local storage handled in context
-    //window.localStorage.setItem('AramSummonerStorageObject', JSON.stringify({ storedSummoners: newSummoners, storedTeamlist: teamlist }))
   }
   
   const getChampionData = (championId) => {
