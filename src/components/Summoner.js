@@ -10,8 +10,17 @@ import { v4 as uuidv4 } from 'uuid'
 import DeleteIcon from '@mui/icons-material/Delete'
 import RerollIcon from '@mui/icons-material/Replay'
 import SettingsIcon from '@mui/icons-material/MoreVert'
+import { useSummonerContext } from "../contexts/summonerContext"
+import { useTeamlistContext } from "../contexts/teamlistContext"
+import { useSnackbarContext } from "../contexts/snackbarContext"
+import ChampImage from "./ChampImage"
 
-const Summoner = ({summoner, index, deleteSummoner, handleRollSummoner}) => {
+const Summoner = ({summoner, index }) => {
+
+  const [ , , , rollSummoner, deleteSummoner ] = useSummonerContext()
+  const [ , , , deleteSummonerFromTeamlist ] = useTeamlistContext()
+
+  const { displaySnackbarMessage } = useSnackbarContext()
 
   const roleTypes = {
     'Assassin': {
@@ -40,6 +49,22 @@ const Summoner = ({summoner, index, deleteSummoner, handleRollSummoner}) => {
     }
   }
 
+  const handleRollSummoner = () => {
+    rollSummoner(summoner)
+    //no longer needed, localstorage handled in context
+    //window.localStorage.setItem('AramSummonerStorageObject', JSON.stringify({ storedSummoners: newSummoners, storedTeamlist: teamlist }))
+  }
+
+  const handleDeleteSummoner = () => {
+    //const newTeamlist = deleteSummonerFromTeamlist(summoner.id)
+    deleteSummonerFromTeamlist(summoner.id)
+    //const newSummoners = deleteSummoner(summoner.id)
+    deleteSummoner(summoner.id)
+    //no longer needed, localstorage handled in context
+    //window.localStorage.setItem('AramSummonerStorageObject', JSON.stringify({ storedSummoners: newSummoners, storedTeamlist: newTeamlist }))
+    displaySnackbarMessage(`Summoner ${summoner.name} was successfully deleted`, 'success' )
+  }
+
   const champImageColumnSize = 75
 
   return (
@@ -60,12 +85,12 @@ const Summoner = ({summoner, index, deleteSummoner, handleRollSummoner}) => {
                 <Typography variant='caption'>{summoner.filteredMasteries.length}</Typography>
                 <Box>
                   <Tooltip title='remove summoner'>
-                    <IconButton onClick={() => deleteSummoner(summoner.id)}>
+                    <IconButton onClick={() => handleDeleteSummoner()}>
                       <DeleteIcon />
                     </IconButton>
                   </Tooltip>
                   <Tooltip title='Reroll champions for this summoner'>
-                    <IconButton onClick={() => handleRollSummoner(summoner.id)}>
+                    <IconButton onClick={() => handleRollSummoner()}>
                       <RerollIcon />
                     </IconButton>
                   </Tooltip>
@@ -82,7 +107,7 @@ const Summoner = ({summoner, index, deleteSummoner, handleRollSummoner}) => {
                     const champ = summoner.masteries.find((champ) => champ.championId === Number(champId))
                     return (
                       <Stack key={uuidv4()} alignItems={{ xs: 'flex-start', md: 'center'}} width={{ xs: 175, md: champImageColumnSize}} >
-                        <Box display={{ xs: 'none', md: 'block' }} component='img' sx={{ height: champImageColumnSize, width: champImageColumnSize }} alt={champ.name} src={`https://ddragon.leagueoflegends.com/cdn/12.13.1/img/champion/${champ.image.full}`} />
+                        <ChampImage champ={champ} size={champImageColumnSize} />
                         <Typography variant='caption' align='center' >{index+1}: {champ.name}</Typography>
                         <Stack direction='row' justifyContent='center'>
                           {champ.tags.map((tag) => (
@@ -99,7 +124,7 @@ const Summoner = ({summoner, index, deleteSummoner, handleRollSummoner}) => {
                   } else {
                     return (
                       <Stack key={uuidv4()} alignItems='center' width={80}>
-                        <Box display={{ xs: 'none', md: 'flex' }} sx={{ height: 80, width: 80, bgcolor: 'black' }} alignItems='center' justifyContent='center'><Typography variant='h6' align='center' >?</Typography></Box>
+                        <Box display={{ xs: 'none', md: 'flex' }} sx={{ height: 80, width: 80, bgcolor: 'black' }} alignItems='center' justifyContent='center'><Typography variant='h6' align='center' color='white' >?</Typography></Box>
                         <Typography variant='body2' align='center'>{index+1}: ?</Typography>
                       </Stack>
                     )
