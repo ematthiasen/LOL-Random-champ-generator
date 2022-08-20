@@ -1,6 +1,23 @@
 import { createContext, useContext, useMemo, useState } from "react"
 
-const SummonerContext = createContext()
+let initialState = {}
+
+const saveSummonersToLocalStorage = (summoners) => {
+  window.localStorage.setItem('AramRandomSummonersObject', JSON.stringify(summoners))
+}
+
+const loadSummonersFromLocalStorage = () => {
+  const savedSummonersObject = window.localStorage.getItem('AramRandomSummonersObject')
+  if(savedSummonersObject) {
+    //console.log('found stored Summoners Object', savedSummonersObject)
+    const savedSummonersData = JSON.parse(savedSummonersObject)
+    initialState = savedSummonersData
+  }
+}
+
+loadSummonersFromLocalStorage()
+
+const SummonerContext = createContext(initialState)
 
 const useSummonerContext = () => {
   const context = useContext(SummonerContext)
@@ -33,7 +50,7 @@ const useSummonerContext = () => {
           return null
         }
       })
-      console.log('rolled champs', rolledChamps)
+      //console.log('rolled champs', rolledChamps)
       summonerObject.randomChamps = rolledChamps
       
       const newSummoners = {...summoners}
@@ -48,13 +65,9 @@ const useSummonerContext = () => {
   }
 
   const deleteSummoner = (summonerId) => {
-    console.log('deleting summoner', summonerId)
     const newSummoners = { ...summoners }
-    console.log('new summoners before delete', newSummoners)
     delete newSummoners[summonerId]
-    console.log('newSummoners after delete', newSummoners)
     setSummoners(newSummoners)
-    console.log('summoners object set to ', newSummoners)
     return newSummoners
   }
 
@@ -63,8 +76,14 @@ const useSummonerContext = () => {
 }
 
 const SummonerContextProvider = (props) => {
-  const [ summoners, setSummoners ] = useState({})
-  const value = useMemo(() => [ summoners, setSummoners ], [ summoners ])
+  const [ summoners, setSummoners ] = useState(initialState)
+
+  const setSummonersAndStoreLocal = (summoners) => {
+    setSummoners(summoners)
+    saveSummonersToLocalStorage(summoners)
+  }
+
+  const value = useMemo(() => [ summoners, setSummonersAndStoreLocal ], [ summoners ])
   return <SummonerContext.Provider value={value} {...props} />
 }
 

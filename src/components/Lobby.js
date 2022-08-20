@@ -29,6 +29,8 @@ const Lobby = () => {
   }, [])
   
   // include mastery
+  //handled in context, no longer needed
+  /*
   useEffect(() => {
     const savedSummonerStorageObject = window.localStorage.getItem('AramSummonerStorageObject')
     if(savedSummonerStorageObject) {
@@ -36,9 +38,11 @@ const Lobby = () => {
       const savedSummonersData = JSON.parse(savedSummonerStorageObject)
       const { storedSummoners, storedTeamlist } = savedSummonersData
       setSummoners(storedSummoners)
-      setTeamlist(storedTeamlist)  
+      setTeamlist(storedTeamlist)
+
     }
   }, [])
+  */
 
 
   const rollTeam = (listId) => {
@@ -48,7 +52,8 @@ const Lobby = () => {
       newSummoners = rollSummoner(summoners[summonerId])
       return null      
     })
-    window.localStorage.setItem('AramSummonerStorageObject', JSON.stringify({ storedSummoners: newSummoners, storedTeamlist: teamlist }))
+    //no longer needed, local storage handled in context
+    //window.localStorage.setItem('AramSummonerStorageObject', JSON.stringify({ storedSummoners: newSummoners, storedTeamlist: teamlist }))
   }
   
   const getChampionData = (championId) => {
@@ -96,7 +101,8 @@ const Lobby = () => {
 
       console.log('result of move: ', updatedLists)
       setTeamlist(updatedLists)
-      window.localStorage.setItem('AramSummonerStorageObject', JSON.stringify({ storedSummoners: summoners, storedTeamlist: updatedLists }))
+      //no longer needed, localstorage handled in context
+      //window.localStorage.setItem('AramSummonerStorageObject', JSON.stringify({ storedSummoners: summoners, storedTeamlist: updatedLists }))
 
     } else {
       console.log('movement between lists')
@@ -129,7 +135,8 @@ const Lobby = () => {
       
       console.log('result of move: ', updatedLists)
       setTeamlist(updatedLists)
-      window.localStorage.setItem('AramSummonerStorageObject', JSON.stringify({ storedSummoners: summoners, storedTeamlist: updatedLists }))
+      //no longer needed, localstorage handled in context
+      //window.localStorage.setItem('AramSummonerStorageObject', JSON.stringify({ storedSummoners: summoners, storedTeamlist: updatedLists }))
     }
     
   }
@@ -139,31 +146,31 @@ const Lobby = () => {
     return <div>Waiting for champions to load</div>
   } else 
   return (
-        <>
-        <DragDropContext onDragEnd={onDragEnd}>
-          <Grid item display='flex' xs={6} md={3} order={{ xs:3, md: 2 }} sx={{ p: 1, }} justifyContent='right'>
-            <Button variant='contained' onClick={() => rollTeam('team1')} sx={{ }} >Roll Team 1</Button>
-          </Grid>
-          <SummonerLoadingPanel champList={champList} />
-          <Grid item display='flex' xs={6} md={3} order={{ xs: 3, md: 2 }} sx={{ p: 1}}  justifyContent='left'>
-            <Button variant='contained' onClick={() => rollTeam('team2')}>Roll Team 2</Button>
-          </Grid>
-          <br />
-            {['team1', 'team2'].map(listId => {
-              const list = teamlist[listId]
-              return  (
-                <TeamList
-                  key={listId} 
-                  teamList={list} 
-                  summoners={summoners} 
-                  getChampData={getChampionData} 
-                  direction='vertical'
-                />
-              )
-            })}
-        </DragDropContext>
+    <>
+      <DragDropContext onDragEnd={onDragEnd}>
+        <Grid item display='flex' xs={6} md={3} order={{ xs:3, md: 2 }} sx={{ p: 1, }} justifyContent='right'>
+          <Button variant='contained' onClick={() => rollTeam('team1')} sx={{ }} >Roll Team 1</Button>
+        </Grid>
+        <SummonerLoadingPanel champList={champList} />
+        <Grid item display='flex' xs={6} md={3} order={{ xs: 3, md: 2 }} sx={{ p: 1}}  justifyContent='left'>
+          <Button variant='contained' onClick={() => rollTeam('team2')}>Roll Team 2</Button>
+        </Grid>
+        <br />
+          {['team1', 'team2'].map(listId => {
+            const list = teamlist[listId]
+            return  (
+              <TeamList
+                key={listId} 
+                teamList={list} 
+                summoners={summoners} 
+                getChampData={getChampionData} 
+                direction='vertical'
+              />
+            )
+          })}
+      </DragDropContext>
     </>
-    )
+  )
 }
 
 export default Lobby

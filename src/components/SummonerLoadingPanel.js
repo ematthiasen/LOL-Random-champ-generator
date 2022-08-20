@@ -24,7 +24,7 @@ const SummonerLoadingPanel = ({ champList }) => {
 
   const handleLoadSummoner = async (event) => {
     event.preventDefault()
-    console.log('clicked handle load summoner')
+    //console.log('clicked handle load summoner')
     setSummonerLoading(true)
     try {
       let summonerData = await summonerService.getSummoner(summonerName)
@@ -39,6 +39,7 @@ const SummonerLoadingPanel = ({ champList }) => {
       setSummonerLoading(false)
       window.localStorage.setItem('AramSummonerStorageObject', JSON.stringify({ storedSummoners: newSummoners, storedTeamlist: newTeamlist }))
       displaySnackbarMessage(`Summoner ${summonerData.name} loaded`, 'success')
+      setSummonerName('')
     } catch (error) {
       setSummonerLoading(false)
       displaySnackbarMessage(`Failed to load summoner ${summonerName}: ${error.message}`, 'error')
@@ -46,7 +47,7 @@ const SummonerLoadingPanel = ({ champList }) => {
   }
 
   const clearDataAndStorage = () => {
-    window.localStorage.removeItem('AramSummonerStorageObject')
+    //window.localStorage.removeItem('AramSummonerStorageObject')
     setSummoners({})
     setTeamlist({
       'team1': {

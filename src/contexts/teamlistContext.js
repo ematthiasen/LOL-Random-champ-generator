@@ -1,7 +1,33 @@
 import { createContext, useContext, useState, useMemo } from "react"
 
+let initialState = {
+  'team1': {
+    id: 'team1',
+    summoners: []
+  },
+  'team2': {
+    id: 'team2',
+    summoners: []
+  }
+}
 
-const TeamlistContext = createContext()
+const saveTeamlistToLocalStorage = (teamlist) => {
+  window.localStorage.setItem('AramRandomTeamlistObject', JSON.stringify(teamlist))
+}
+
+const loadTeamlistFromLocalStorage = () => {
+  const savedTeamlistObject = window.localStorage.getItem('AramRandomTeamlistObject')
+  if(savedTeamlistObject) {
+    //console.log('found stored Teamlist Object', savedTeamlistObject)
+    const savedTeamlistData = JSON.parse(savedTeamlistObject)
+    initialState = savedTeamlistData
+  }
+}
+
+loadTeamlistFromLocalStorage()
+
+
+const TeamlistContext = createContext(initialState)
 
 const useTeamlistContext = () => {
   const context = useContext(TeamlistContext)
@@ -45,22 +71,15 @@ const useTeamlistContext = () => {
     console.log('deleting summoner from teamlist', summonerId)
     // make a copy of teamlist
     const newTeamlist = {}
-    console.log('old teamlist', teamlist)
   
     for (const [key, list] of Object.entries(teamlist)){
-      console.log('key', key, 'list', list)
       newTeamlist[key] = { ...list }
       newTeamlist[key].summoners = [ ...list.summoners ]
       //console.log('new teamlist', newTeamlist[key])
       const index = newTeamlist[key].summoners.findIndex((summoner) => summoner === summonerId)
       if (index !== -1){
-        console.log('hit in list', key, 'on index', index)
-
-        //const newList = Array.from(newTeamlist[key].summoners)
+        //console.log('hit in list', key, 'on index', index)
         newTeamlist[key].summoners.splice(index, 1)
-        console.log('newlist', newTeamlist[key].summoners)
-        console.log('oldlist', list.summoners)
-        //newTeamlist[list.id].summoners = newList
       }
     }
     setTeamlist(newTeamlist)
@@ -73,17 +92,13 @@ const useTeamlistContext = () => {
 }
 
 const TeamlistContextProvider = (props) => {
-  const [ teamlist, setTeamlist] = useState({
-    'team1': {
-      id: 'team1',
-      summoners: []
-    },
-    'team2': {
-      id: 'team2',
-      summoners: []
-    }
-  })
-  const value = useMemo(() => [teamlist, setTeamlist], [teamlist])
+  const [ teamlist, setTeamlist] = useState(initialState)
+  const setTeamlistAndStoreLocal = (teamlist) => {
+    setTeamlist(teamlist)
+    saveTeamlistToLocalStorage(teamlist)
+  }
+  
+  const value = useMemo(() => [teamlist, setTeamlistAndStoreLocal], [teamlist])
   return (<TeamlistContext.Provider value={value} {...props} />)
 
 }

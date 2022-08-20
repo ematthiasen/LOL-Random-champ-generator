@@ -48,7 +48,6 @@ const populateSummonerMasteries = async (summonerObject, champList) => {
 
 const generateFilteredMasteries = (summonerObject, minMasteryCutoff, maxMasteryCutoff) => {
   try {
-    console.log('summonerObject', summonerObject)
     const filteredMasteries = summonerObject.masteries.filter(champ => maxMasteryCutoff > champ.championPoints && champ.championPoints > minMasteryCutoff )
     summonerObject.filteredMasteries = filteredMasteries
     return summonerObject

@@ -10,6 +10,7 @@ import { TeamlistContextProvider } from './contexts/teamlistContext'
 import MasterySettings from './components/MasterySettings'
 import { SnackbarContextProvider } from './contexts/snackbarContext'
 import SnackbarDisplay from './components/SnackbarDisplay'
+import { MasteryContextProvider } from './contexts/masteryContext'
 
 
 
@@ -40,12 +41,6 @@ function App() {
     }
   }), [paletteMode])
 
-
-  const storeLocalData = (summonerStorageObject) => {
-    window.localStorage.setItem('AramSummonerStorageObject', JSON.stringify(summonerStorageObject))
-  }
-  //console.log('rendering storage object', summonerStorageObject)
-
   return (
       <ThemeProvider theme={customTheme}>
         <CssBaseline />
@@ -56,17 +51,19 @@ function App() {
           </Toolbar>
         </AppBar>
         <SnackbarContextProvider>
-          <SummonerContextProvider>
-            <TeamlistContextProvider>
-              <Container sx={{ }} >
-                <Grid container spacing={1} justifyContent='center' alignItems='flex-start' align='center' alignContent='center'>
-                  <MasterySettings />
-                  <Lobby />
-                </Grid>
-              </Container>
-                <SnackbarDisplay />
-            </TeamlistContextProvider>
-          </SummonerContextProvider>
+        <SummonerContextProvider>
+        <TeamlistContextProvider>
+        <MasteryContextProvider>
+          <Container sx={{ }} >
+            <Grid container spacing={1} justifyContent='center' alignItems='flex-start' align='center' alignContent='center'>
+              <MasterySettings />
+              <Lobby />
+            </Grid>
+            </Container>
+          <SnackbarDisplay />
+        </MasteryContextProvider>
+        </TeamlistContextProvider>
+        </SummonerContextProvider>
         </SnackbarContextProvider>
     </ThemeProvider>
   )

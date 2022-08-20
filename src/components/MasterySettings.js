@@ -1,74 +1,51 @@
 import { Grid, TextField } from "@mui/material"
-import { useState } from "react"
+import { useMasteryContext } from "../contexts/masteryContext"
+import { useSummonerContext } from "../contexts/summonerContext"
+import { useTeamlistContext } from "../contexts/teamlistContext"
+import summonerService from '../services/summonerService'
 
 const MasterySettings = () => {
   
-  const [ minMasteryCutoff, setMinMasteryCutoff ] = useState(0)
-  const [ maxMasteryCutoff, setMaxMasteryCutoff ] = useState(999999)
-
-
+  const [ masteryCutoff, setMasteryCutoff,  ] = useMasteryContext()
+  const [ teamlist ] = useTeamlistContext()
+  const [ summoners, setSummoners ] = useSummonerContext()
 
   const handleMinMasteryCutoff = (event) => {
     event.preventDefault()
-    setMinMasteryCutoff(event.target.value)
+    setMasteryCutoff({ ...masteryCutoff, min: Number(event.target.value)})
 
-    // Changing the mastery cutoffs affects the available champions for each summoner. 
-    // List of available champs need to be generated again for all summoners
-    // Handle this in the summonerContext?
-
-    // update filteredMasteries data for summoners
-    // Move to a separate function?
-    /*
-
-    const updatedSummonerStorage = {
-      ...summonerStorageObject
+    const newSummoners = { ...summoners}
+    // for each summoner in team1's summonerlist
+    for (const listId of Object.keys(teamlist)) {
+      teamlist[listId].summoners.map((summonerId) => {
+        // generate new filtered summoners list
+        newSummoners[summonerId] = summonerService.generateFilteredMasteries(summoners[summonerId], Number(event.target.value), masteryCutoff.max)
+        return null
+      })
     }
-
-    for (const [key, summoner] of Object.entries(summonerStorageObject.summoners)) {
-      const newFilteredMasteries = summoner.masteries.filter(champ => maxMasteryCutoff > champ.championPoints && champ.championPoints > event.target.value )
-      console.log('summoner', summoner.name)
-      updatedSummonerStorage.summoners[key].filteredMasteries = newFilteredMasteries
-    }
-
-    storeLocalData(updatedSummonerStorage)
-    setSummonerStorageObject(
-      updatedSummonerStorage
-    )
-
-    */
-
+    setSummoners(newSummoners)
   }
 
   const handleMaxMasteryCutoff = (event) => {
     event.preventDefault()
+    setMasteryCutoff({ ...masteryCutoff, max: Number(event.target.value)})
 
-
-    setMaxMasteryCutoff(event.target.value)
-    /*
-    console.log(summonerStorageObject.summoners)
-    // update filteredMasteries data for summoners
-
-    const updatedSummonerStorage = {
-      ...summonerStorageObject
+    const newSummoners = { ...summoners}
+    // for each summoner in team1's summonerlist
+    for (const listId of Object.keys(teamlist)) {
+      teamlist[listId].summoners.map((summonerId) => {
+        // generate new filtered summoners list
+        newSummoners[summonerId] = summonerService.generateFilteredMasteries(summoners[summonerId], masteryCutoff.min, Number(event.target.value))
+        return null
+      })
     }
-
-    for (const [key, summoner] of Object.entries(summonerStorageObject.summoners)) {
-      const newFilteredMasteries = summoner.masteries.filter(champ => event.target.value > champ.championPoints && champ.championPoints > minMasteryCutoff )
-      console.log('summoner', summoner.name)
-      updatedSummonerStorage.summoners[key].filteredMasteries = newFilteredMasteries
-    }
-
-    storeLocalData(updatedSummonerStorage)
-    setSummonerStorageObject(
-      updatedSummonerStorage
-    )
-    */
+    setSummoners(newSummoners)
   }
 
   return (
     <Grid item order={{ xs: 4 }} xs={12}>
-      <TextField size='small' id='mastery-minimum-point-cutoff' type='number' label='Minimum mastery points' variant='outlined' value={minMasteryCutoff} onChange={handleMinMasteryCutoff} />
-      <TextField size='small' id='mastery-maximum-point-cutoff' type='number' label='Maximum mastery points' variant='outlined' value={maxMasteryCutoff} onChange={handleMaxMasteryCutoff} />
+      <TextField size='small' id='mastery-minimum-point-cutoff' type='number' label='Minimum mastery points' variant='outlined' value={masteryCutoff.min} onChange={handleMinMasteryCutoff} />
+      <TextField size='small' id='mastery-maximum-point-cutoff' type='number' label='Maximum mastery points' variant='outlined' value={masteryCutoff.max} onChange={handleMaxMasteryCutoff} />
     </Grid>
   )
 

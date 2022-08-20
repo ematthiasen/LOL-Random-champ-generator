@@ -13,11 +13,12 @@ import SettingsIcon from '@mui/icons-material/MoreVert'
 import { useSummonerContext } from "../contexts/summonerContext"
 import { useTeamlistContext } from "../contexts/teamlistContext"
 import { useSnackbarContext } from "../contexts/snackbarContext"
+import ChampImage from "./ChampImage"
 
 const Summoner = ({summoner, index }) => {
 
-  const [ summoners, setSummoners, addSummoner, rollSummoner, deleteSummoner ] = useSummonerContext()
-  const [ teamlist, setTeamlist, addSummonerToTeamlist, deleteSummonerFromTeamlist ] = useTeamlistContext()
+  const [ , , , rollSummoner, deleteSummoner ] = useSummonerContext()
+  const [ , , , deleteSummonerFromTeamlist ] = useTeamlistContext()
 
   const { displaySnackbarMessage } = useSnackbarContext()
 
@@ -49,16 +50,18 @@ const Summoner = ({summoner, index }) => {
   }
 
   const handleRollSummoner = () => {
-    const newSummoners = rollSummoner(summoner)
-    //fix
-    //socketService.sendRollSummoner(summonerId)
-    window.localStorage.setItem('AramSummonerStorageObject', JSON.stringify({ storedSummoners: newSummoners, storedTeamlist: teamlist }))
+    rollSummoner(summoner)
+    //no longer needed, localstorage handled in context
+    //window.localStorage.setItem('AramSummonerStorageObject', JSON.stringify({ storedSummoners: newSummoners, storedTeamlist: teamlist }))
   }
 
   const handleDeleteSummoner = () => {
-    const newTeamlist = deleteSummonerFromTeamlist(summoner.id)
-    const newSummoners = deleteSummoner(summoner.id)
-    window.localStorage.setItem('AramSummonerStorageObject', JSON.stringify({ storedSummoners: newSummoners, storedTeamlist: newTeamlist }))
+    //const newTeamlist = deleteSummonerFromTeamlist(summoner.id)
+    deleteSummonerFromTeamlist(summoner.id)
+    //const newSummoners = deleteSummoner(summoner.id)
+    deleteSummoner(summoner.id)
+    //no longer needed, localstorage handled in context
+    //window.localStorage.setItem('AramSummonerStorageObject', JSON.stringify({ storedSummoners: newSummoners, storedTeamlist: newTeamlist }))
     displaySnackbarMessage(`Summoner ${summoner.name} was successfully deleted`, 'success' )
   }
 
@@ -104,7 +107,7 @@ const Summoner = ({summoner, index }) => {
                     const champ = summoner.masteries.find((champ) => champ.championId === Number(champId))
                     return (
                       <Stack key={uuidv4()} alignItems={{ xs: 'flex-start', md: 'center'}} width={{ xs: 175, md: champImageColumnSize}} >
-                        <Box display={{ xs: 'none', md: 'block' }} component='img' sx={{ height: champImageColumnSize, width: champImageColumnSize }} alt={champ.name} src={`https://ddragon.leagueoflegends.com/cdn/12.13.1/img/champion/${champ.image.full}`} />
+                        <ChampImage champ={champ} size={champImageColumnSize} />
                         <Typography variant='caption' align='center' >{index+1}: {champ.name}</Typography>
                         <Stack direction='row' justifyContent='center'>
                           {champ.tags.map((tag) => (
